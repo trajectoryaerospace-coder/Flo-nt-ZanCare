@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Flo'nt - ZanCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @keyframes floatSunflower {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(15px, -20px) rotate(15deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        @keyframes floatSunflowerAlt {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-20px, -10px) rotate(-20deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        .sunflower-1 { animation: floatSunflower 8s ease-in-out infinite; }
+        .sunflower-2 { animation: floatSunflowerAlt 10s ease-in-out infinite; }
+
+        @keyframes fadeInDelayed {
+            0% { opacity: 0; transform: translateY(10px); pointer-events: none; }
+            90% { opacity: 0; transform: translateY(10px); pointer-events: none; }
+            100% { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        }
+        .fade-in-btn { animation: fadeInDelayed 3.3s forwards; }
+
+        .screen-transition {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .wheel-container::-webkit-scrollbar { display: none; }
+        .wheel-container { -ms-overflow-style: none; scrollbar-width: none; scroll-snap-type: y mandatory; }
+        .wheel-item { scroll-snap-align: center; }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-out;
+            opacity: 0;
+        }
+        .accordion-content.open {
+            max-height: 500px;
+            opacity: 1;
+        }
+    
+        .settings-shell {
+            position: fixed;
+            top: 3rem;
+            right: 1.5rem;
+            z-index: 60;
+        }
+        .settings-button {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 9999px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(229, 231, 235, 0.95);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+            color: #4b5563;
+            font-size: 1rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+        }
+        .settings-button:active { transform: scale(0.95); }
+        .settings-panel {
+            position: absolute;
+            top: 3rem;
+            right: 0;
+            width: min(17rem, calc(100vw - 2rem));
+            border-radius: 1.25rem;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(229, 231, 235, 0.95);
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.14);
+            padding: 0.85rem;
+            backdrop-filter: blur(14px);
+        }
+        .settings-panel.hidden { display: none; }
+        .theme-choice {
+            flex: 1;
+            border-radius: 0.85rem;
+            border: 1px solid #f3f4f6;
+            background: #f9fafb;
+            color: #4b5563;
+            font-size: 0.72rem;
+            font-weight: 900;
+            padding: 0.7rem 0.5rem;
+            transition: all 0.2s ease;
+        }
+        .theme-choice.active {
+            background: #FF4B72;
+            border-color: #FF4B72;
+            color: #ffffff;
+            box-shadow: 0 8px 16px rgba(255, 75, 114, 0.22);
+        }
+        .about-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease, opacity 0.2s ease, padding-top 0.25s ease;
+        }
+        .about-content.open {
+            max-height: 180px;
+            opacity: 1;
+            padding-top: 0.65rem;
+        }
+        body.dark-mode {
+            background: #101116 !important;
+            color: #f8fafc !important;
+        }
+        body.dark-mode .settings-button,
+        body.dark-mode .settings-panel,
+        body.dark-mode header,
+        body.dark-mode .bg-white,
+        body.dark-mode .bg-white\/40,
+        body.dark-mode .bg-gray-50,
+        body.dark-mode .bg-pink-50,
+        body.dark-mode .bg-pink-50\/20,
+        body.dark-mode .bg-pink-50\/40,
+        body.dark-mode .bg-rose-50,
+        body.dark-mode .bg-purple-50,
+        body.dark-mode .bg-amber-50,
+        body.dark-mode .bg-red-50 {
+            background-color: rgba(29, 31, 40, 0.96) !important;
+        }
+        body.dark-mode .text-black,
+        body.dark-mode .text-gray-900,
+        body.dark-mode .text-gray-800,
+        body.dark-mode .text-gray-700,
+        body.dark-mode .text-gray-600,
+        body.dark-mode .text-gray-500,
+        body.dark-mode .text-amber-700,
+        body.dark-mode .text-purple-600,
+        body.dark-mode .text-red-700 {
+            color: #f8fafc !important;
+        }
+        body.dark-mode .text-\[\#616161\],
+        body.dark-mode .text-\[\#9E9E9E\] {
+            color: #cbd5e1 !important;
+        }
+        body.dark-mode .border,
+        body.dark-mode .border-gray-100,
+        body.dark-mode .border-gray-200,
+        body.dark-mode .border-pink-100,
+        body.dark-mode .border-pink-200,
+        body.dark-mode .border-red-200,
+        body.dark-mode .border-white\/50 {
+            border-color: rgba(148, 163, 184, 0.24) !important;
+        }
+        body.dark-mode .shadow-sm,
+        body.dark-mode .shadow-xs,
+        body.dark-mode .shadow-lg {
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22) !important;
+        }
+        body.dark-mode .theme-choice {
+            background: rgba(15, 23, 42, 0.72);
+            border-color: rgba(148, 163, 184, 0.25);
+            color: #cbd5e1;
+        }
+        body.dark-mode .theme-choice.active {
+            background: #FF4B72;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="bg-white text-black min-h-screen flex flex-col justify-between items-center overflow-x-hidden relative select-none antialiased pt-24 pb-12">
+
+    <div id="progressBarContainer" class="absolute top-6 left-0 right-0 px-8 z-30 opacity-0 transition-opacity duration-300 pointer-events-none">
+        <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden">
+            <div id="progressBar" class="bg-[#FF4B72] h-full w-0 transition-all duration-300 ease-out rounded-full"></div>
+        </div>
+    </div>
+
+    <button id="backBtn" class="absolute top-12 left-6 z-30 opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-100 shadow-sm active:scale-95 text-gray-600 font-bold text-lg">
+        ←
+    </button>
+    <div id="settingsShell" class="settings-shell">
+        <button id="settingsBtn" class="settings-button" type="button" onclick="toggleSettingsMenu()" aria-label="Open settings" aria-expanded="false">&#9881;</button>
+        <div id="settingsPanel" class="settings-panel hidden">
+            <p class="text-[0.65rem] font-black tracking-wider uppercase text-[#9E9E9E] mb-2">Settings</p>
+            <div class="flex gap-2 mb-3">
+                <button id="lightModeBtn" type="button" class="theme-choice" onclick="setTheme('light')">Light</button>
+                <button id="darkModeBtn" type="button" class="theme-choice" onclick="setTheme('dark')">Dark</button>
+            </div>
+            <button type="button" class="w-full flex items-center justify-between text-left font-black text-sm text-black py-2 border-t border-gray-100" onclick="toggleAboutDropdown()">
+                <span>About</span>
+                <span id="aboutArrow" class="text-xs text-[#9E9E9E] transition-transform duration-200">v</span>
+            </button>
+            <div id="aboutContent" class="about-content">
+                <p class="text-xs font-semibold leading-relaxed text-[#616161]">Flo'nt - ZanCare is a tiny local-only cycle helper made with care. Your info stays on this device.</p>
+            </div>
+        </div>
+    </div>
+    <div id="flower1" class="absolute top-[12%] left-[15%] opacity-40 sunflower-1 pointer-events-none z-0 transition-all duration-500">
+        <svg width="70" height="70" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="50" r="16" fill="#4A2E13"/>
+            <ellipse cx="50" cy="18" rx="10" ry="18" fill="#FFD000"/>
+            <ellipse cx="50" cy="82" rx="10" ry="18" fill="#FFD000"/>
+            <ellipse cx="18" cy="50" rx="18" ry="10" fill="#FFD000"/>
+            <ellipse cx="82" cy="50" rx="18" ry="10" fill="#FFD000"/>
+        </svg>
+    </div>
+    <div id="flower2" class="absolute bottom-[25%] right-[15%] opacity-30 sunflower-2 pointer-events-none z-0 transition-all duration-500">
+        <svg width="90" height="90" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="50" r="16" fill="#3D230A"/>
+            <ellipse cx="50" cy="18" rx="10" ry="18" fill="#FFCA28"/>
+            <ellipse cx="50" cy="82" rx="10" ry="18" fill="#FFCA28"/>
+            <ellipse cx="18" cy="50" rx="18" ry="10" fill="#FFCA28"/>
+            <ellipse cx="82" cy="50" rx="18" ry="10" fill="#FFCA28"/>
+        </svg>
+    </div>
+
+    <div id="screen0" class="screen-transition w-full max-w-md px-8 text-center z-10 flex flex-col items-center justify-center my-auto transform scale-100 opacity-100">
+        <span class="text-[#9E9E9E] text-lg font-medium tracking-wide uppercase mb-2">Welcome to</span>
+        <h1 class="text-[3.2rem] font-black tracking-tighter text-black leading-tight">
+            Flo'nt - <span class="text-[#FF4B72]">ZanCare!</span>
+        </h1>
+    </div>
+
+    <div id="screen1" class="screen-transition w-full max-w-md px-8 text-center z-10 flex flex-col items-center justify-center my-auto transform scale-90 opacity-0 hidden">
+        <div class="flex items-start justify-center font-extrabold tracking-tight leading-none mb-1">
+            <span class="text-[2.41rem] mt-3 mr-1 font-bold">#</span>
+            <span class="text-[6.9rem] font-black tracking-tighter">4.3B</span>
+            <span class="text-[2.41rem] self-end mb-3 ml-2 font-bold">female</span>
+        </div>
+        <h1 class="text-[1.62rem] font-bold leading-[1.2] tracking-tight text-black px-2">
+            NOT OB-GYN-recommended app for uhhh period trust.
+        </h1>
+        <p class="text-[#9E9E9E] text-[0.66rem] font-medium leading-relaxed mt-6 px-6">
+            Based on NO survey and recommended by NO ONE (except me uwu) but for my amazing gf. (okay ik its made by guy (me) but trust i do not steal share any data. (local storage is used so data only in ur phone)) Source: Trust Me Bro
+        </p>
+    </div>
+
+    <div id="screen2" class="screen-transition w-full max-w-md px-6 z-10 flex flex-col items-center justify-center my-auto transform scale-90 opacity-0 hidden">
+        <h1 class="text-[1.8rem] font-black tracking-tight text-black mb-8">Privacy Second</h1>
+        <div class="space-y-6 text-left w-full px-2">
+            <label class="flex items-start space-x-3 cursor-pointer">
+                <input type="checkbox" id="check1" class="mt-1 min-w-[18px] min-h-[18px] rounded border-gray-300 text-[#FF4B72] focus:ring-0 cursor-pointer appearance-none border checked:bg-[#FF4B72] checked:border-transparent relative after:content-['✓'] after:absolute after:hidden checked:after:block after:text-white after:text-xs after:top-[-2px] after:left-[3px]">
+                <span class="text-[0.75rem] font-semibold text-black leading-snug select-none">u aint get no privacyy cuz me ur boyfriend</span>
+            </label>
+            <label class="flex items-start space-x-3 cursor-pointer">
+                <input type="checkbox" id="check2" class="mt-1 min-w-[18px] min-h-[18px] rounded border-gray-300 text-[#FF4B72] focus:ring-0 cursor-pointer appearance-none border checked:bg-[#FF4B72] checked:border-transparent relative after:content-['✓'] after:absolute after:hidden checked:after:block after:text-white after:text-xs after:top-[-2px] after:left-[3px]">
+                <span class="text-[0.72rem] font-medium text-[#616161] leading-relaxed select-none">I completely understand and ima give out allllll my details to my boyfriend who's soo cute trustt</span>
+            </label>
+            <label class="flex items-start space-x-3 cursor-pointer">
+                <input type="checkbox" id="check3" class="mt-1 min-w-[18px] min-h-[18px] rounded border-gray-300 text-[#FF4B72] focus:ring-0 cursor-pointer appearance-none border checked:bg-[#FF4B72] checked:border-transparent relative after:content-['✓'] after:absolute after:hidden checked:after:block after:text-white after:text-xs after:top-[-2px] after:left-[3px]">
+                <span class="text-[0.72rem] font-medium text-[#616161] leading-relaxed select-none">and your bf loves you so much and ofc wouldnt do anything with the info (and uhhh this website doesnt actually collect any data btw) and u must still surrender everything to him mwhahahhahahahahahahahahahahaha</span>
+            </label>
+        </div>
+    </div>
+
+    <div id="screen3" class="screen-transition w-full max-w-md px-6 z-10 flex flex-col items-center justify-center my-auto transform scale-90 opacity-0 hidden">
+        <h1 class="text-[1.8rem] font-black tracking-tight text-black text-center mb-8 px-2">Who are you using Flo'nt for?</h1>
+        <div class="flex flex-col space-y-3 w-full px-4">
+            <button onclick="selectScreen3(this)" class="s3-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-base bg-white shadow-sm">Me</button>
+            <button onclick="selectScreen3(this)" class="s3-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-base bg-white shadow-sm">Myself</button>
+            <button onclick="selectScreen3(this)" class="s3-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-base bg-white shadow-sm">Ayushman's AMAZINGNGNG GF</button>
+            <button onclick="selectScreen3(this)" class="s3-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-base bg-white shadow-sm">UR MOM</button>
+        </div>
+    </div>
+
+    <div id="screen4" class="screen-transition w-full max-w-md px-6 z-10 flex flex-col items-center justify-center my-auto transform scale-90 opacity-0 hidden">
+        <h1 class="text-[1.8rem] font-black tracking-tight text-black text-center mb-8 px-2">How'd you find out about us?</h1>
+        <div class="flex flex-col space-y-3 w-full px-4">
+            <button onclick="selectScreen4(this)" class="s4-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-base bg-white shadow-sm">MY AMAZING BF</button>
+            <button onclick="selectScreen4(this)" class="s4-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-base bg-white shadow-sm">MY AMAZING BF</button>
+            <button onclick="selectScreen4(this)" class="s4-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-base bg-white shadow-sm">MY SUPER AMAZING BF</button>
+            <button onclick="selectScreen4(this)" class="s4-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-base bg-white shadow-sm">BF</button>
+        </div>
+    </div>
+
+    <div id="screen5" class="screen-transition w-full max-w-md px-6 z-10 flex flex-col items-center justify-center my-auto transform scale-90 opacity-0 hidden">
+        <h1 class="text-[1.8rem] font-black tracking-tight text-black text-center mb-2 px-2">When were you born?</h1>
+        <p class="text-[#9E9E9E] text-[0.72rem] font-medium leading-relaxed text-center mb-4 px-6">
+            I have literally 0 reason to ask this but since this is a flo rip off and they asked it ima too.
+        </p>
+        <div class="flex flex-col items-center space-y-3">
+            <button onclick="scrollWheelPrecise(-1)" class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center shadow-sm font-bold bg-white active:bg-gray-50 text-gray-500">▲</button>
+            <div class="relative w-40 h-44 flex items-center justify-center">
+                <div class="absolute inset-x-0 h-12 border-t border-b border-gray-200 pointer-events-none"></div>
+                <div id="yearWheel" class="wheel-container w-full h-full overflow-y-scroll snap-y snap-mandatory py-16 text-center"></div>
+            </div>
+            <button onclick="scrollWheelPrecise(1)" class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center shadow-sm font-bold bg-white active:bg-gray-50 text-gray-500">▼</button>
+        </div>
+    </div>
+
+    <div id="screen6" class="screen-transition w-full max-w-md px-4 z-10 flex flex-col items-center justify-center my-auto transform scale-90 opacity-0 hidden relative min-h-[480px]">
+        <span class="absolute top-2 left-6 text-2xl opacity-60 animate-bounce">✨</span>
+        <span class="absolute top-10 right-8 text-2xl opacity-60 animate-ping duration-1000">🎉</span>
+        <h1 class="text-[1.9rem] font-black tracking-tight text-center leading-tight mb-2">0 Million 5 Star Reviews!</h1>
+        <div class="flex space-x-1 justify-center mb-6 text-gray-200 text-2xl"><span class="text-gray-300">★</span><span>★</span><span>★</span><span>★</span><span>★</span></div>
+        <div class="w-full space-y-3 px-2">
+            <div class="bg-gray-50 border border-gray-100 p-3 rounded-xl shadow-sm transform -rotate-1"><div class="text-gray-200 text-[0.65rem] mb-1">★★★★★</div><p class="text-xs font-semibold text-gray-700">"why did i even download this bro 💀"</p></div>
+            <div class="bg-gray-50 border border-gray-100 p-3 rounded-xl shadow-sm transform rotate-2"><div class="text-gray-200 text-[0.65rem] mb-1">★★★★★</div><p class="text-xs font-semibold text-gray-700">"who made this shit 🥀😭"</p></div>
+            <div class="bg-gray-50 border border-gray-100 p-3 rounded-xl shadow-sm transform -rotate-2"><div class="text-gray-200 text-[0.65rem] mb-1">★★★★★</div><p class="text-xs font-semibold text-gray-700">"am i tripping gang"</p></div>
+            <div class="bg-gray-50 border border-gray-100 p-3 rounded-xl shadow-sm transform rotate-1"><div class="text-gray-200 text-[0.65rem] mb-1">★★★★★</div><p class="text-xs font-semibold text-pink-600 font-bold">"this Zan person must be really cute and pretty"</p></div>
+        </div>
+    </div>
+
+    <div id="screen7" class="screen-transition w-full max-w-md px-6 z-10 flex flex-col items-center justify-center my-auto transform scale-90 opacity-0 hidden">
+        <h1 class="text-[1.8rem] font-black tracking-tight text-black text-center mb-8 px-2">How do you feel about your period?</h1>
+        <div class="flex flex-col space-y-3 w-full px-4">
+            <button onclick="selectScreen7(this)" class="s7-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-sm bg-white shadow-sm">BRO WHO LIKES IT</button>
+            <button onclick="selectScreen7(this)" class="s7-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-sm bg-white shadow-sm">ASK IT TO GET A JOB</button>
+            <button onclick="selectScreen7(this)" class="s7-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-sm bg-white shadow-sm">HATE IT AS MUCH AS MOSQUITTITEOS</button>
+            <button onclick="selectScreen7(this)" class="s7-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-sm bg-white shadow-sm">WE ARE FRIENDS... FRIENDS THAT HATE</button>
+        </div>
+    </div>
+
+    <div id="screen8" class="screen-transition w-full max-w-md px-6 z-10 flex flex-col items-center justify-center my-auto transform scale-90 opacity-0 hidden">
+        <h1 class="text-[1.8rem] font-black tracking-tight text-black text-center mb-8 px-2">Rate your knowledge on periods!</h1>
+        <div class="flex flex-col space-y-3 w-full px-4">
+            <button onclick="selectScreen8(this)" class="s8-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-base bg-white shadow-sm">PROFESH</button>
+            <button onclick="selectScreen8(this)" class="s8-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-base bg-white shadow-sm">EXPERT</button>
+            <button onclick="selectScreen8(this)" class="s8-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-base bg-white shadow-sm">IM A DOCTOR TRUST</button>
+            <button onclick="selectScreen8(this)" class="s8-option border-2 border-gray-200 hover:border-[#FF4B72] text-black font-bold py-4 px-6 rounded-2xl transition-all duration-200 text-left text-base bg-white shadow-sm">I INVENTED THEM</button>
+        </div>
+    </div>
+
+    <div id="screen9" class="screen-transition w-full max-w-md px-8 text-center z-10 flex flex-col items-center justify-center my-auto transform scale-90 opacity-0 hidden">
+        <div class="text-6xl mb-4 animate-bounce">❤️</div>
+        <h1 class="text-[3rem] font-black tracking-tighter text-black leading-tight mb-4">CONGRATS!</h1>
+        <p class="text-[#616161] text-base font-semibold leading-relaxed px-2">None of that was important it just felt funny,</p>
+        <p class="text-black text-lg font-bold leading-relaxed mt-4 px-4">but I genuinely hope this app helps you out! <span class="text-[#FF4B72]">I love youuu smm</span></p>
+    </div>
+
+    <div id="screen10" class="screen-transition w-full max-w-md px-4 z-10 flex flex-col items-center hidden opacity-0 transform scale-95 self-start min-h-screen pt-4">
+        
+        <div class="w-full bg-pink-50 border border-pink-100 rounded-2xl p-3 mb-4 text-center shadow-xs">
+            <span class="text-[0.7rem] font-bold text-pink-500 tracking-wider uppercase block mb-1">🛠️ CYCLE TIMELINE DECK (ONLY FOR ADJUSTMENTS)</span>
+            <div class="flex items-center justify-center space-x-2">
+                <button onclick="adjustTestDay(-1)" class="px-3 py-1 bg-white text-pink-600 font-bold border border-pink-200 rounded-lg text-xs shadow-xs active:scale-95 transition-transform">◀ Prev</button>
+                <span class="text-sm font-black text-pink-700 min-w-[90px]"><span id="lblTestDay">Day 5</span></span>
+                <button onclick="adjustTestDay(1)" class="px-3 py-1 bg-white text-pink-600 font-bold border border-pink-200 rounded-lg text-xs shadow-xs active:scale-95 transition-transform">Next ▶</button>
+            </div>
+            <button onclick="triggerRedoIntroFlow()" class="mt-2 text-[0.68rem] font-bold text-gray-500 hover:text-[#FF4B72] transition-colors underline decoration-dotted">
+                🔄 Replay Intro Onboarding Flow
+            </button>
+        </div>
+
+        <header class="w-full backdrop-blur-md bg-white/40 border border-white/50 rounded-2xl py-4 px-5 flex items-center justify-between shadow-sm mb-5">
+            <div class="flex items-center space-x-2">
+                <span class="text-xl">🌸</span>
+                <span class="font-black text-xl tracking-tight text-black">Flo'nt - <span class="text-[#FF4B72]">ZanCare</span></span>
+            </div>
+            <span id="badgePhase" class="text-[0.62rem] font-black tracking-wider uppercase bg-[#FF4B72] text-white px-2.5 py-1 rounded-full shadow-xs text-center max-w-[150px] truncate">Menses / Follicular</span>
+        </header>
+
+        <div id="alertBannerZone" class="w-full hidden mb-4">
+            <div class="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 flex flex-col space-y-3 shadow-xs animate-pulse">
+                <div class="flex items-center space-x-2">
+                    <span class="text-lg">⚠️</span>
+                    <span class="text-xs font-black tracking-tight">Period may start soon. Prepare your logs!</span>
+                </div>
+                <button onclick="resetCycleToDayOne()" class="w-full bg-red-600 hover:bg-red-700 text-white font-black text-xs tracking-tight uppercase py-3 rounded-xl shadow-xs transition-transform active:scale-95">
+                    CLICK WHEN YOUR NEXT PERIOD STARTS!
+                </button>
+            </div>
+        </div>
+
+        <div class="w-full bg-white border border-gray-100 rounded-3xl p-5 shadow-sm mb-5">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-extrabold text-base tracking-tight text-gray-800" id="calendarMonth">June / July 2026</h3>
+                <span class="text-[0.7rem] font-bold text-gray-400">Continuous Dynamic Flow</span>
+            </div>
+
+            <div class="grid grid-cols-7 gap-y-3 gap-x-1 text-center text-xs font-semibold text-gray-500 mb-2">
+                <div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div><div>Su</div>
+            </div>
+            <div class="grid grid-cols-7 gap-y-3 gap-x-1 text-center font-bold text-sm" id="calendarDaysGrid">
+                </div>
+
+            <div class="mt-4 pt-3 border-t border-gray-50 flex flex-wrap gap-2 items-center justify-between text-[0.68rem] text-gray-400 font-medium">
+                <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-[#FF4B72] mr-1"></span>Mensus (Start)</div>
+                <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-purple-400 mr-1"></span>Ovulation</div>
+                <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 mr-1"></span>Luteal Phase</div>
+                <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-gray-900 mr-1"></span>Today/Follicical</div>
+            </div>
+        </div>
+
+        <div class="w-full mb-8" id="intelligenceCardSlot">
+            </div>
+
+    
+        <button onclick="window.location.href='what.html'" class="w-full mb-8 bg-[#FF4B72] hover:bg-[#ff335f] text-white font-black text-sm tracking-tight py-4 px-5 rounded-2xl shadow-lg transition-transform active:scale-95">
+            What to do in certain situations?
+        </button>
+    </div>
+
+    <div id="footerRegion" class="w-full max-w-md px-8 text-center z-10 flex flex-col items-center mb-6">
+        <button id="actionBtn" class="fade-in-btn bg-[#FF4B72] text-white font-bold text-sm px-8 py-3 rounded-full shadow-lg hover:bg-[#ff335f] transition-all duration-200 w-full max-w-[220px]">
+            Next
+        </button>
+    </div>
+
+    <script>
+        let currentScreen = 0;
+        let s3Selected = false;
+        let s4Selected = false;
+        let validYearSelected = false;
+        let s7Selected = false;
+        let s8Selected = false;
+        
+        let currentDayPointer = 5; 
+
+        const screens = [
+            document.getElementById('screen0'), document.getElementById('screen1'),
+            document.getElementById('screen2'), document.getElementById('screen3'),
+            document.getElementById('screen4'), document.getElementById('screen5'),
+            document.getElementById('screen6'), document.getElementById('screen7'),
+            document.getElementById('screen8'), document.getElementById('screen9'),
+            document.getElementById('screen10')
+        ];
+        
+        const actionBtn = document.getElementById('actionBtn');
+        const backBtn = document.getElementById('backBtn');
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        const progressBar = document.getElementById('progressBar');
+        const footerRegion = document.getElementById('footerRegion');
+
+        const check1 = document.getElementById('check1');
+        const check2 = document.getElementById('check2');
+        const check3 = document.getElementById('check3');
+        const yearWheel = document.getElementById('yearWheel');
+
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const lightModeBtn = document.getElementById('lightModeBtn');
+        const darkModeBtn = document.getElementById('darkModeBtn');
+        const aboutContent = document.getElementById('aboutContent');
+        const aboutArrow = document.getElementById('aboutArrow');
+
+        function setTheme(theme) {
+            const safeTheme = theme === 'dark' ? 'dark' : 'light';
+            document.body.classList.toggle('dark-mode', safeTheme === 'dark');
+            lightModeBtn.classList.toggle('active', safeTheme === 'light');
+            darkModeBtn.classList.toggle('active', safeTheme === 'dark');
+            localStorage.setItem('flont_theme', safeTheme);
+        }
+
+        function toggleSettingsMenu() {
+            const isOpening = settingsPanel.classList.contains('hidden');
+            settingsPanel.classList.toggle('hidden');
+            settingsBtn.setAttribute('aria-expanded', String(isOpening));
+        }
+
+        function toggleAboutDropdown() {
+            const isOpen = aboutContent.classList.toggle('open');
+            aboutArrow.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+
+        document.addEventListener('click', (event) => {
+            const shell = document.getElementById('settingsShell');
+            if (!shell.contains(event.target)) {
+                settingsPanel.classList.add('hidden');
+                settingsBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        setTheme(localStorage.getItem('flont_theme') || 'light');
+        // Check LocalStorage on initial structural load
+        window.addEventListener('DOMContentLoaded', () => {
+            const hasVisitedBefore = localStorage.getItem('flont_has_visited_onboarding');
+            if (hasVisitedBefore === 'true') {
+                // Instantly teleport straight into the home dashboard
+                screens[0].classList.add('hidden');
+                screens[10].classList.remove('hidden');
+                screens[10].classList.add('scale-100', 'opacity-100');
+                currentScreen = 10;
+                updateNavigationUI();
+                renderCalendarDashboard();
+                renderSymptomIntelligenceCard();
+            }
+        });
+
+        function triggerRedoIntroFlow() {
+            // Remove local storage flag so they can clear state if desired
+            localStorage.removeItem('flont_has_visited_onboarding');
+            
+            // Re-initialize all onboarding parameter flags
+            s3Selected = false;
+            s4Selected = false;
+            validYearSelected = false;
+            s7Selected = false;
+            s8Selected = false;
+            check1.checked = false;
+            check2.checked = false;
+            check3.checked = false;
+
+            document.querySelectorAll('.s3-option, .s4-option, .s7-option, .s8-option').forEach(btn => {
+                btn.classList.remove('border-[#FF4B72]', 'bg-[#FFF0F3]');
+            });
+
+            // Fast reset body structure layout rules back to setup style
+            document.body.classList.add('pt-24', 'pb-12');
+            document.body.classList.remove('pt-4', 'pb-6', 'overflow-y-auto');
+            document.getElementById('flower1').classList.remove('opacity-5', 'scale-50');
+            document.getElementById('flower2').classList.remove('opacity-5', 'scale-50');
+
+            // Hide everything except screen0
+            screens.forEach(s => {
+                s.classList.add('hidden');
+                s.classList.remove('scale-100', 'opacity-100');
+            });
+            
+            screens[0].classList.remove('hidden');
+            screens[0].classList.add('scale-100', 'opacity-100');
+            currentScreen = 0;
+            
+            footerRegion.classList.remove('hidden');
+            updateNavigationUI();
+            syncButtonState();
+        }
+
+        let wheelHTML = '<div class="h-12 wheel-item snap-center"></div>'; 
+        for (let y = 1990; y <= 2026; y++) {
+            wheelHTML += `<div class="h-12 flex items-center justify-center text-xl font-bold text-gray-400 wheel-item snap-center transition-all" id="year-${y}">${y}</div>`;
+        }
+        wheelHTML += '<div class="h-12 wheel-item snap-center"></div>'; 
+        yearWheel.innerHTML = wheelHTML;
+
+        function updateNavigationUI() {
+            if (currentScreen === 0) {
+                progressBarContainer.classList.add('opacity-0');
+                backBtn.classList.add('opacity-0', 'pointer-events-none');
+            } else if (currentScreen === 10) {
+                progressBarContainer.classList.add('opacity-0');
+                backBtn.classList.add('opacity-0', 'pointer-events-none');
+                footerRegion.classList.add('hidden');
+                document.body.classList.remove('pt-24', 'pb-12');
+                document.body.classList.add('pt-4', 'pb-6', 'overflow-y-auto');
+                document.getElementById('flower1').classList.add('opacity-5', 'scale-50');
+                document.getElementById('flower2').classList.add('opacity-5', 'scale-50');
+            } else {
+                progressBarContainer.classList.remove('opacity-0');
+                backBtn.classList.remove('opacity-0', 'pointer-events-none');
+                const percentage = (currentScreen / (screens.length - 2)) * 100;
+                progressBar.style.width = `${Math.min(percentage, 100)}%`;
+            }
+        }
+
+        function transitionToScreen(targetIndex, isBackwards = false) {
+            const currentView = screens[currentScreen];
+            const nextView = screens[targetIndex];
+
+            currentView.classList.remove('scale-100', 'opacity-100');
+            currentView.classList.add(isBackwards ? 'scale-90' : 'scale-110', 'opacity-0');
+
+            setTimeout(() => {
+                currentView.classList.add('hidden');
+                nextView.classList.remove('hidden');
+                nextView.offsetHeight;
+                currentView.classList.remove('scale-90', 'scale-110', 'opacity-0');
+                nextView.classList.add('scale-100', 'opacity-100');
+                currentScreen = targetIndex;
+                updateNavigationUI();
+                syncButtonState();
+                if(currentScreen === 10) {
+                    // Lock in visited status into local storage instantly
+                    localStorage.setItem('flont_has_visited_onboarding', 'true');
+                    renderCalendarDashboard();
+                    renderSymptomIntelligenceCard();
+                }
+            }, 450);
+        }
+
+        function syncButtonState() {
+            actionBtn.innerText = "Next";
+            if (currentScreen === 0 || currentScreen === 1 || currentScreen === 6) {
+                enableButton(true);
+            } else if (currentScreen === 2) {
+                enableButton(check1.checked && check2.checked && check3.checked);
+            } else if (currentScreen === 3) {
+                enableButton(s3Selected);
+            } else if (currentScreen === 4) {
+                enableButton(s4Selected);
+            } else if (currentScreen === 5) {
+                if (validYearSelected) {
+                    actionBtn.innerText = "Next";
+                    enableButton(true);
+                } else {
+                    actionBtn.innerText = "NAH U LYING";
+                    enableButton(false);
+                }
+            } else if (currentScreen === 7) {
+                enableButton(s7Selected);
+            } else if (currentScreen === 8) {
+                enableButton(s8Selected);
+            } else if (currentScreen === 9) {
+                actionBtn.innerText = "ENTER HOME PAGE";
+                enableButton(true);
+            }
+        }
+
+        function enableButton(state) {
+            if (state) {
+                actionBtn.disabled = false;
+                actionBtn.classList.remove('bg-[#B0B0B0]', 'cursor-not-allowed', 'opacity-60');
+                actionBtn.classList.add('bg-[#FF4B72]', 'hover:bg-[#ff335f]', 'cursor-pointer');
+            } else {
+                if(currentScreen === 5) {
+                    actionBtn.disabled = false; 
+                    actionBtn.classList.remove('bg-[#FF4B72]', 'hover:bg-[#ff335f]', 'cursor-pointer');
+                    actionBtn.classList.add('bg-[#B0B0B0]', 'opacity-60');
+                } else {
+                    actionBtn.disabled = true;
+                    actionBtn.classList.remove('bg-[#FF4B72]', 'hover:bg-[#ff335f]', 'cursor-pointer');
+                    actionBtn.classList.add('bg-[#B0B0B0]', 'cursor-not-allowed', 'opacity-60');
+                }
+            }
+        }
+
+        function selectScreen3(element) {
+            document.querySelectorAll('.s3-option').forEach(btn => btn.classList.remove('border-[#FF4B72]', 'bg-[#FFF0F3]'));
+            element.classList.add('border-[#FF4B72]', 'bg-[#FFF0F3]');
+            s3Selected = true;
+            syncButtonState();
+        }
+        function selectScreen4(element) {
+            document.querySelectorAll('.s4-option').forEach(btn => btn.classList.remove('border-[#FF4B72]', 'bg-[#FFF0F3]'));
+            element.classList.add('border-[#FF4B72]', 'bg-[#FFF0F3]');
+            s4Selected = true;
+            syncButtonState();
+        }
+        function selectScreen7(element) {
+            document.querySelectorAll('.s7-option').forEach(btn => btn.classList.remove('border-[#FF4B72]', 'bg-[#FFF0F3]'));
+            element.classList.add('border-[#FF4B72]', 'bg-[#FFF0F3]');
+            s7Selected = true;
+            syncButtonState();
+        }
+        function selectScreen8(element) {
+            document.querySelectorAll('.s8-option').forEach(btn => btn.classList.remove('border-[#FF4B72]', 'bg-[#FFF0F3]'));
+            element.classList.add('border-[#FF4B72]', 'bg-[#FFF0F3]');
+            s8Selected = true;
+            syncButtonState();
+        }
+
+        function scrollWheelPrecise(direction) {
+            yearWheel.scrollBy({ top: direction * 48, behavior: 'smooth' });
+        }
+
+        yearWheel.addEventListener('scroll', () => {
+            const containerCenter = yearWheel.getBoundingClientRect().top + (yearWheel.clientHeight / 2);
+            let targetYear = null;
+            for (let y = 1990; y <= 2026; y++) {
+                const el = document.getElementById(`year-${y}`);
+                if (el) {
+                    const elCenter = el.getBoundingClientRect().top + (el.getBoundingClientRect().height / 2);
+                    if (Math.abs(containerCenter - elCenter) < 24) {
+                        el.classList.remove('text-gray-400', 'text-xl');
+                        el.classList.add('text-[#FF4B72]', 'text-2xl');
+                        targetYear = y;
+                    } else {
+                        el.classList.remove('text-[#FF4B72]', 'text-2xl');
+                        el.classList.add('text-gray-400', 'text-xl');
+                    }
+                }
+            }
+            validYearSelected = (targetYear === 2010);
+            syncButtonState();
+        });
+
+        check1.addEventListener('change', syncButtonState);
+        check2.addEventListener('change', syncButtonState);
+        check3.addEventListener('change', syncButtonState);
+
+        backBtn.addEventListener('click', () => {
+            if (currentScreen > 0) transitionToScreen(currentScreen - 1, true);
+        });
+
+        actionBtn.addEventListener('click', () => {
+            if (currentScreen < screens.length - 1) {
+                if (currentScreen === 2 && !(check1.checked && check2.checked && check3.checked)) return;
+                if (currentScreen === 3 && !s3Selected) return;
+                if (currentScreen === 4 && !s4Selected) return;
+                if (currentScreen === 5 && !validYearSelected) return;
+                if (currentScreen === 7 && !s7Selected) return;
+                if (currentScreen === 8 && !s8Selected) return;
+                
+                actionBtn.classList.remove('fade-in-btn');
+                transitionToScreen(currentScreen + 1, false);
+            }
+        });
+
+
+        // ==========================================================
+        // ================= DYNAMIC LOGIC ENGINE ===================
+        // ==========================================================
+        
+        function adjustTestDay(amount) {
+            currentDayPointer += amount;
+            if (currentDayPointer < 1) currentDayPointer = 28;
+            if (currentDayPointer > 28) currentDayPointer = 1;
+            
+            document.getElementById('lblTestDay').innerText = `Day ${currentDayPointer}`;
+            renderCalendarDashboard();
+            renderSymptomIntelligenceCard();
+        }
+
+        function resetCycleToDayOne() {
+            currentDayPointer = 1;
+            document.getElementById('lblTestDay').innerText = `Day ${currentDayPointer}`;
+            renderCalendarDashboard();
+            renderSymptomIntelligenceCard();
+        }
+
+        function renderCalendarDashboard() {
+            const daysGrid = document.getElementById('calendarDaysGrid');
+            const alertZone = document.getElementById('alertBannerZone');
+            const calendarMonthHeader = document.getElementById('calendarMonth');
+            daysGrid.innerHTML = '';
+
+            // Late Luteal Window Configuration (Days 25-28)
+            if (currentDayPointer >= 25 && currentDayPointer <= 28) {
+                alertZone.classList.remove('hidden');
+            } else {
+                alertZone.classList.add('hidden');
+            }
+
+            // Dynamic view page shifting calculation engine setup
+            let calendarViewOffset = (currentDayPointer > 16) ? 14 : 0;
+            
+            if (currentDayPointer > 16) {
+                calendarMonthHeader.innerText = "July / August 2026";
+            } else {
+                calendarMonthHeader.innerText = "June / July 2026";
+            }
+
+            const masterTimelineDeck = [
+                { num: 27, label: 'Jun', dayIdx: -1 },
+                { num: 28, label: 'Jun', dayIdx: 0 },
+                { num: 29, label: 'Jun', dayIdx: 1 },
+                { num: 30, label: 'Jun', dayIdx: 2 },
+                { num: 1, label: 'Jul', dayIdx: 3 },
+                { num: 2, label: 'Jul', dayIdx: 4 },
+                { num: 3, label: 'Jul', dayIdx: 5 },
+                { num: 4, label: 'Jul', dayIdx: 6 },
+                { num: 5, label: 'Jul', dayIdx: 7 },
+                { num: 6, label: 'Jul', dayIdx: 8 },
+                { num: 7, label: 'Jul', dayIdx: 9 },
+                { num: 8, label: 'Jul', dayIdx: 10 },
+                { num: 9, label: 'Jul', dayIdx: 11 },
+                { num: 10, label: 'Jul', dayIdx: 12 },
+                { num: 11, label: 'Jul', dayIdx: 13 },
+                { num: 12, label: 'Jul', dayIdx: 14 },
+                { num: 13, label: 'Jul', dayIdx: 15 },
+                { num: 14, label: 'Jul', dayIdx: 16 },
+                { num: 15, label: 'Jul', dayIdx: 17 },
+                { num: 16, label: 'Jul', dayIdx: 18 },
+                { num: 17, label: 'Jul', dayIdx: 19 },
+                { num: 18, label: 'Jul', dayIdx: 20 },
+                { num: 19, label: 'Jul', dayIdx: 21 },
+                { num: 20, label: 'Jul', dayIdx: 22 },
+                { num: 21, label: 'Jul', dayIdx: 23 },
+                { num: 22, label: 'Jul', dayIdx: 24 },
+                { num: 23, label: 'Jul', dayIdx: 25 },
+                { num: 24, label: 'Jul', dayIdx: 26 },
+                { num: 25, label: 'Jul', dayIdx: 27 },
+                { num: 26, label: 'Jul', dayIdx: 28 },
+                { num: 27, label: 'Jul', dayIdx: 29 },
+                { num: 28, label: 'Jul', dayIdx: 30 },
+                { num: 29, label: 'Jul', dayIdx: 31 },
+                { num: 1, label: 'Aug', dayIdx: 32 },
+                { num: 2, label: 'Aug', dayIdx: 33 }
+            ];
+
+            let activeSegmentSlice = masterTimelineDeck.slice(calendarViewOffset, calendarViewOffset + 21);
+
+            activeSegmentSlice.forEach(day => {
+                let bgStyle = "text-gray-700 bg-transparent";
+                const isMatchForToday = (day.dayIdx === currentDayPointer);
+
+                if (day.dayIdx >= 1 && day.dayIdx <= 7) {
+                    if (isMatchForToday) bgStyle = "bg-[#FF4B72] text-white ring-4 ring-pink-200 rounded-full";
+                    else bgStyle = "bg-rose-50 text-[#FF4B72] rounded-full";
+                } else if (day.dayIdx >= 13 && day.dayIdx <= 15) {
+                    if (isMatchForToday) bgStyle = "bg-purple-500 text-white ring-4 ring-purple-100 rounded-full";
+                    else bgStyle = "bg-purple-50 text-purple-600 rounded-full";
+                } else if (day.dayIdx >= 16 && day.dayIdx <= 28) {
+                    if (isMatchForToday) bgStyle = "bg-amber-500 text-white ring-4 ring-amber-100 rounded-full";
+                    else bgStyle = "bg-amber-50 text-amber-700 rounded-full";
+                } else {
+                    if (isMatchForToday) bgStyle = "bg-gray-900 text-white ring-4 ring-gray-200 rounded-full";
+                }
+
+                daysGrid.innerHTML += `
+                    <div class="flex flex-col items-center justify-center p-1.5 min-w-[36px] min-h-[42px] ${bgStyle}">
+                        <span class="text-[0.6rem] opacity-60 font-medium block leading-none mb-0.5">${day.label}</span>
+                        <span class="text-xs font-black block leading-none">${day.num}</span>
+                    </div>`;
+            });
+        }
+
+        const fullDatabase = {
+            mensesEarly: {
+                phase: "Menses Phase (Follicular Cycle Start)",
+                next: "Follicular Development Stage",
+                heading: "Days 1 - 2: Heavy Shedding & Low Energy",
+                mood: "Both estrogen and progesterone are at their absolute minimum values. This sudden hormonal withdrawal leaves your brain feeling depleted of standard serotonin triggers, leading directly to strong fatigue, introversion, low emotional endurance, and an urge to cocoon away from social friction.",
+                symptoms: [
+                    "Intense lower uterine cramping (dysmenorrhea) as prostaglandins spike to make your uterus contract and detach its thickened endometrial lining.",
+                    "Dull, heavy, radiating pain across your lower back region and thighs.",
+                    "Noticeable fatigue, brain fog, and localized tension headaches.",
+                    "Heavy crimson or dark red menstrual flow, frequently containing small tissue clots."
+                ],
+                drive: "Typically quite low due to acute physical pain and low baseline energy stores, although relief from cramping can cause intermittent changes.",
+                biological: "Your brain's hypothalamus gland prompts your pituitary gland to release Follicle-Stimulating Hormone (FSH) to prepare a fresh wave of ovarian follicles, even as the previous cycle's unfertilized lining drops away.",
+                advice: "Prioritize heating pads on your lower abdomen, anti-inflammatory support, simple hydration habits, and extensive deep sleep."
+            },
+            mensesLate: {
+                phase: "Menses / Proliferative Phase",
+                next: "Pre-Ovulatory Surge Window",
+                heading: "Days 3 - 4: Rebounding Lightly",
+                mood: "Your ovaries are starting to slowly drip-feed fresh estrogen back into your bloodstream. While you are still dealing with minor physical exhaustion, the baseline brain fog begins lifting, rendering you significantly more stabilized, calmer, and gently optimistic.",
+                symptoms: [
+                    "Menstrual bleeding lightens to moderate or light flow, transforming to a brighter pink or rusty brown coloration.",
+                    "Severe cramping drops down into a mild, intermittent lower abdominal pulling or heavy dull pressure.",
+                    "Systemic water retention or bloating begins to flush out through your kidneys."
+                ],
+                drive: "Gently rebounding as physical cramping ceases and baseline systemic blood circulation to the pelvic area returns to normal parameters.",
+                biological: "Ovarian follicles are rapidly growing, and the strongest dominant follicle begins producing estrogen. This rising estrogen initiates the 'proliferative' step, healing and rebuilding a clean, fresh uterine wall layer.",
+                advice: "Introduce gentle movement or light walking to clear out lingering abdominal pelvic pooling and support healthy circulation."
+            },
+            mensesEnd: {
+                phase: "Follicular Phase (Proliferative Step)",
+                next: "Peak High-Estrogen Window",
+                heading: "Days 5 - 7: Flow Exit & Energy Wake",
+                mood: "Estrogen is stepping up with power! Serotonin and dopamine pathways light up, boosting verbal memory, overall mood clarity, extraversion, and personal confidence. You will naturally want to make plans and check off tasks.",
+                symptoms: [
+                    "Bleeding stops completely or resolves into light residual spot trails.",
+                    "Physical pelvic cramps vanish entirely.",
+                    "Skin complexions look clear and less oily as testosterone levels maintain perfect ratios."
+                ],
+                drive: "Noticeably rising. Higher estrogen levels cause physical tissues to become more sensitive and well-perfused with blood flow.",
+                biological: "The menstrual flow phase is over. The endometrium is thickening again. Ovarian follicles compete to be the one selected for release.",
+                advice: "An excellent week to schedule high-intensity workouts, organize complex projects, or initiate demanding cognitive tasks."
+            },
+            follicularLate: {
+                phase: "Late Follicular Phase (Pre-Ovulation)",
+                next: "Ovulation Phase Surge",
+                heading: "Days 8 - 12: High Estrogen Euphoria",
+                mood: "You have reached your absolute highest emotional stamina and mental agility. High levels of circulating estrogen make your brain highly resilient against stress, enhancing optimism, spatial processing speeds, and verbal communication charm.",
+                symptoms: [
+                    "Zero structural abdominal pain or cramping indicators.",
+                    "Skin is exceptionally clear, glowing, and radiant due to high hydration retention driven by estrogen.",
+                    "Cervical fluids shift from dry/sticky to a moist, creamy consistency."
+                ],
+                drive: "Significantly high. Your biology is priming you to seek companionship and feel maximally attractive.",
+                biological: "The dominant follicle (Graafian follicle) balloons to near-ovulation sizes. It pumps out maximum levels of estradiol, which will soon trigger the brain to release a massive wave of Luteinizing Hormone (LH).",
+                advice: "Max out your heavy training routines, complex public speaking arrangements, and creative collaboration targets."
+            },
+            ovulation: {
+                phase: "Ovulation Phase (The Fertile Pinnacle)",
+                next: "Early Luteal Hormonal Switch",
+                heading: "Days 13 - 16: Peak Hormonal Release",
+                mood: "A sudden, powerful rush of Luteinizing Hormone (LH) occurs alongside a brief spike in testosterone. This often produces high motivation, social confidence, and a strong sense of personal appeal. AND YOUU HORNYYYYY",
+                symptoms: [
+                    "Cervical mucus transforms into a distinct, hyper-hydrated, slippery consistency resembling raw egg whites (designed to nourish and protect cells).",
+                    "A brief, sharp, one-sided lower pelvic twinge known clinically as Mittelschmerz (ovulation pain from the follicle rupturing).",
+                    "Heightened baseline sensory awareness: improved sense of smell, vision details, and taste accuracy."
+                ],
+                drive: "Reaches its absolute peak for your entire monthly cycle, driven directly by the brief, evolutionary surge of circulating testosterone.",
+                biological: "The mature follicle bursts open, releasing the viable egg cell into the fallopian tube. The egg remains viable for roughly 12 to 24 hours.",
+                advice: "Track your cervical fluids closely if you want to understand your exact hormonal peaks. Perfect window for high social connection."
+            },
+            lutealEarly: {
+                phase: "Early Luteal Phase (The Progesterone Shift)",
+                next: "Late Luteal PMS Timeline",
+                heading: "Days 17 - 22: The Calm, Cozy Switch",
+                mood: "Estrogen drops down sharply post-ovulation, while progesterone rises rapidly. Progesterone acts as a natural neurosteroid, activating GABA pathways in the brain to produce a peaceful, grounded effect. You'll shift from high social energy to wanting cozy, quiet environments.",
+                symptoms: [
+                    "Physical stamina remains steady, but sudden high-intensity endurance might feel slightly heavier.",
+                    "Cervical mucus quickly becomes thick, sticky, and opaque again.",
+                    "Basal body temperature steps up by 0.5 to 1.0 full degree Fahrenheit and stays elevated."
+                ],
+                drive: "Gradually returns to a mellow, touch-focused, or lower baseline level as calming progesterone takes over.",
+                biological: "The empty follicle closes and transforms into a temporary structure called the corpus luteum, which pumps out large amounts of progesterone to prepare the uterine lining for potential implantation.",
+                advice: "Lean into steady, restorative workouts like yoga or swimming, and focus on meal prepping and regular sleep schedules."
+            },
+            lutealLate: {
+                phase: "Late Luteal Phase (The PMS Engine)",
+                next: "Menses Reset (Day 1 Next Cycle)",
+                heading: "Days 23 - 28: The PMS & Self-Care Cradle",
+                mood: "The corpus luteum degrades, causing a sudden drop in both estrogen and progesterone. This sharp withdrawal can lower your brain's serotonin and dopamine levels, resulting in irritability, vulnerability, crying spells, and vivid or disrupted sleep patterns.",
+                symptoms: [
+                    "Noticeable water retention, swelling, bloating, and breast tenderness as shifting fluids fill target tissues.",
+                    "Slowed digestion, leading to constipation, gas, or intense sugar and carbohydrate cravings.",
+                    "Oily skin flare-ups or cyclical acne breakouts around the jawline due to minor progesterone/androgen imbalances.",
+                    "Mild, dull pre-menses cramping as prostaglandins start to rebuild in local tissues."
+                ],
+                drive: "Often drops low or shifts into a desire for physical comforting, soothing touch, and emotional reassurance.",
+                biological: "The lack of hormonal signals triggers the blood vessels feeding the endometrium to constrict, setting the stage for the lining to shed and restart the cycle.",
+                advice: "Avoid high-sodium foods to help reduce painful bloating, drink soothing herbal teas, and treat yourself with total kindness."
+            }
+        };
+
+        function getActiveContext(day) {
+            if (day >= 1 && day <= 2) return fullDatabase.mensesEarly;
+            if (day >= 3 && day <= 4) return fullDatabase.mensesLate;
+            if (day >= 5 && day <= 7) return fullDatabase.mensesEnd;
+            if (day >= 8 && day <= 12) return fullDatabase.follicularLate;
+            if (day >= 13 && day <= 16) return fullDatabase.ovulation;
+            if (day >= 17 && day <= 22) return fullDatabase.lutealEarly;
+            return fullDatabase.lutealLate;
+        }
+
+        function renderSymptomIntelligenceCard() {
+            const context = getActiveContext(currentDayPointer);
+            const slot = document.getElementById('intelligenceCardSlot');
+
+            document.getElementById('badgePhase').innerText = context.phase;
+
+            let symptomsHTML = context.symptoms.map(s => `<li class="mb-1.5 flex items-start"><span class="text-[#FF4B72] mr-2">•</span>${s}</li>`).join('');
+
+            slot.innerHTML = `
+                <div class="bg-gradient-to-br from-white to-pink-50/20 border border-pink-100 rounded-3xl p-6 shadow-sm transition-all duration-300">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[0.65rem] font-extrabold tracking-wider text-[#FF4B72] uppercase bg-pink-50 px-2.5 py-1 rounded-md">DETAILED HEALTH INSIGHT</span>
+                        <span class="text-[0.62rem] text-gray-400 font-bold tracking-tight">Next Up: ${context.next}</span>
+                    </div>
+                    
+                    <h2 class="text-xl font-black text-gray-900 tracking-tight mb-4">${context.heading}</h2>
+                    
+                    <div class="space-y-3">
+                        <div class="border-b border-gray-100 pb-3">
+                            <button onclick="toggleAccordion('acc1')" class="w-full flex items-center justify-between text-left focus:outline-none py-1">
+                                <span class="text-sm font-bold text-gray-800 flex items-center">
+                                    <span class="mr-2">🧠</span> How will my mood be?
+                                </span>
+                                <span id="acc1-arrow" class="text-xs text-gray-400 transform transition-transform duration-200">▼</span>
+                            </button>
+                            <div id="acc1" class="accordion-content">
+                                <p class="text-xs text-gray-600 font-medium leading-relaxed pt-2 pl-6">
+                                    ${context.mood}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="border-b border-gray-100 pb-3">
+                            <button onclick="toggleAccordion('acc2')" class="w-full flex items-center justify-between text-left focus:outline-none py-1">
+                                <span class="text-sm font-bold text-gray-800 flex items-center">
+                                    <span class="mr-2">⚡</span> What will I physically feel?
+                                </span>
+                                <span id="acc2-arrow" class="text-xs text-gray-400 transform transition-transform duration-200">▼</span>
+                            </button>
+                            <div id="acc2" class="accordion-content">
+                                <ul class="text-xs text-gray-600 font-medium leading-relaxed pt-2 pl-6 list-none">
+                                    ${symptomsHTML}
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="border-b border-gray-100 pb-3">
+                            <button onclick="toggleAccordion('acc3')" class="w-full flex items-center justify-between text-left focus:outline-none py-1">
+                                <span class="text-sm font-bold text-gray-800 flex items-center">
+                                    <span class="mr-2">❤️</span> Energy & Drive Levels
+                                </span>
+                                <span id="acc3-arrow" class="text-xs text-gray-400 transform transition-transform duration-200">▼</span>
+                            </button>
+                            <div id="acc3" class="accordion-content">
+                                <p class="text-xs text-gray-600 font-medium leading-relaxed pt-2 pl-6">
+                                    ${context.drive}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="border-b border-gray-100 pb-3">
+                            <button onclick="toggleAccordion('acc4')" class="w-full flex items-center justify-between text-left focus:outline-none py-1">
+                                <span class="text-sm font-bold text-gray-800 flex items-center">
+                                    <span class="mr-2">🔬</span> What's happening inside biologically?
+                                </span>
+                                <span id="acc4-arrow" class="text-xs text-gray-400 transform transition-transform duration-200">▼</span>
+                            </button>
+                            <div id="acc4" class="accordion-content">
+                                <p class="text-xs text-gray-600 font-medium leading-relaxed pt-2 pl-6">
+                                    ${context.biological}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="pb-1">
+                            <button onclick="toggleAccordion('acc5')" class="w-full flex items-center justify-between text-left focus:outline-none py-1">
+                                <span class="text-sm font-bold text-gray-800 flex items-center">
+                                    <span class="mr-2">✨</span> Care & Action Plan
+                                </span>
+                                <span id="acc5-arrow" class="text-xs text-gray-400 transform transition-transform duration-200">▼</span>
+                            </button>
+                            <div id="acc5" class="accordion-content">
+                                <p class="text-xs text-gray-600 font-medium leading-relaxed pt-2 pl-6 bg-pink-50/40 p-2.5 rounded-xl border border-pink-100/40">
+                                    ${context.advice}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            setTimeout(() => toggleAccordion('acc1'), 50);
+        }
+
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            const arrow = document.getElementById(`${id}-arrow`);
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                arrow.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('open');
+                arrow.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        updateNavigationUI();
+        syncButtonState();
+    </script>
+</body>
+</html>

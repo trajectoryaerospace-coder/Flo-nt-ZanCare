@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Symptom Guide - Flo'nt - ZanCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body.theme-pink { --theme-primary: #FF4B72; --theme-bg-soft: #2D1A1E; --theme-border: #4A242B; }
+        body.theme-green { --theme-primary: #10B981; --theme-bg-soft: #112F24; --theme-border: #1B4D3E; }
+        body.theme-purple { --theme-primary: #8B5CF6; --theme-bg-soft: #231942; --theme-border: #3F37C9; }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease-out;
+            opacity: 0;
+        }
+        .accordion-content.open {
+            max-height: 500px;
+            opacity: 1;
+        }
+        
+        .card-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3), 0 2px 8px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Loading Animation Keyframes */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+        .animate-pulse-ring {
+            animation: pulse-ring 2.5s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="theme-pink bg-gray-950 text-gray-100 min-h-screen flex flex-col items-center overflow-x-hidden relative select-none antialiased pt-24 pb-24">
+
+    <div id="loadingScreen" class="fixed inset-0 bg-gray-950 z-50 flex flex-col items-center justify-center transition-opacity duration-500 ease-out">
+        <div class="relative flex items-center justify-center mb-4">
+            <div class="absolute w-24 h-24 rounded-full bg-[var(--theme-primary)]/10 animate-pulse-ring blur-md"></div>
+            <div class="absolute w-16 h-16 rounded-full border border-[var(--theme-primary)]/30 animate-spin" style="animation-duration: 3s;"></div>
+            <span class="text-4xl relative z-10 select-none drop-shadow-[0_0_12px_rgba(255,75,114,0.4)]">💖</span>
+        </div>
+        <h1 class="font-black text-xl tracking-tight text-white mb-1">Flo'nt</h1>
+        <div class="flex items-center space-x-1.5">
+            <div class="w-1.5 h-1.5 bg-[var(--theme-primary)] rounded-full animate-bounce" style="animation-delay: 0ms;"></div>
+            <div class="w-1.5 h-1.5 bg-[var(--theme-primary)] rounded-full animate-bounce" style="animation-delay: 150ms;"></div>
+            <div class="w-1.5 h-1.5 bg-[var(--theme-primary)] rounded-full animate-bounce" style="animation-delay: 300ms;"></div>
+        </div>
+        <p class="text-[0.62rem] font-bold uppercase tracking-widest text-gray-500 mt-6">Securing ZanCare Node</p>
+    </div>
+
+    <nav id="topNavBar" class="fixed top-0 left-0 right-0 h-16 backdrop-blur-md bg-gray-900/70 border-b border-gray-800 px-6 flex items-center justify-between z-40">
+        <div class="flex items-center space-x-2">
+            <span class="text-xl"> </span>
+            <span class="font-black text-xl tracking-tight text-white">Flo'nt - <span class="text-[var(--theme-primary)]">ZanCare</span></span>
+        </div>
+        <div class="flex items-center space-x-3">
+            <span class="text-[0.62rem] font-black tracking-wider uppercase bg-[var(--theme-primary)] text-white px-2.5 py-1 rounded-full shadow-xs text-center">Symptoms</span>
+            <button onclick="toggleSettingsModal(true)" class="p-2 hover:bg-gray-800 rounded-full transition-colors text-lg" title="Settings">⚙️</button>
+        </div>
+    </nav>
+
+    <main class="w-full max-w-md px-5 mt-2 z-10 flex flex-col space-y-8">
+        
+        <div>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xs font-black tracking-wider text-[var(--theme-primary)] uppercase bg-pink-950/30 px-3 py-1.5 rounded-xl">
+                    Related to period
+                </h2>
+                <span class="text-[0.65rem] text-gray-400 font-bold tracking-tight">Cycle Care Deck</span>
+            </div>
+            
+            <div class="space-y-3">
+                <div class="bg-gray-900 border border-gray-800/80 rounded-2xl p-4 card-shadow transition-all duration-300 hover:border-pink-900/50">
+                    <button onclick="toggleCard('card-cramps')" class="w-full flex items-center justify-between text-left focus:outline-none">
+                        <span class="font-bold text-sm text-gray-200 flex items-center"><span class="text-base mr-2">💥</span> Cramps</span>
+                        <span id="card-cramps-arrow" class="text-xs text-gray-400 transform transition-transform duration-250">▼</span>
+                    </button>
+                    <div id="card-cramps" class="accordion-content">
+                        <p class="text-xs text-gray-400 font-medium leading-relaxed pt-3 border-t border-gray-800/60 mt-2 bg-purple-950/10 p-2.5 rounded-xl">
+                           OKAYY SO URE HAVING CRAMPS AND UR STOMACH HURT <br><br>
+                           1. YOU NEED TO FIRSTLY DRINK SOME WATER, MAINLY SOME WARM WATER, THIS LIKE HELPS YOUR UTERU MUSCLES CALM DOWN A LIL BITT.<br><br>
+                           2.MAKE SURE TO STAY HEATED IF POSSIBLE BRO, BEST THING TO DO WOULD BE TO USE A HEATING PAD AND PUTTING IT ON YOUR STOMACH, OR ATLEAST WEARING A JACKET OR BLANKET TO KEEP YOU WARM<br><br>
+                           3.REST AS MUCH AS POSSIBLE, STAY IN A <b>CURLED</b> POSITION LIKE SHRIMP, AND TRY TO STAY LIKE THAT TILL YOU FEEL BETTER.<br><br>
+                           4.EAT SOMETHING LIGHT IF YOU CAN BRO, IT'LL MAKE U FEEL A LIL BETTER.<br><br><br>
+                          <b>CONTACT ME OR CALL ME IF THINGS ARE TOO BAD AND ILL ALWAYS BE THERE, IF YOURE IN PUBLIC SITUATION TRY TO SIT DOWN AS SOON AS YOU CAN PLEASE AND REST IT OUT. I HOPE YOU GET BETTER SOONN BROO</b>
+ 
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800/80 rounded-2xl p-4 card-shadow transition-all duration-300 hover:border-pink-900/50">
+                    <button onclick="toggleCard('card-back')" class="w-full flex items-center justify-between text-left focus:outline-none">
+                        <span class="font-bold text-sm text-gray-200 flex items-center"><span class="text-base mr-2">🪵</span> Back Pain</span>
+                        <span id="card-back-arrow" class="text-xs text-gray-400 transform transition-transform duration-250">▼</span>
+                    </button>
+                    <div id="card-back" class="accordion-content">
+                        <p class="text-xs text-gray-400 font-medium leading-relaxed pt-3 border-t border-gray-800/60 mt-2 bg-purple-950/10 p-2.5 rounded-xl">
+                           OKAY SOO I BELIEVE YOU KNOW WHY IT'S HAPPENING AND I HOPE ITS NOT BAD BROO <br><br>1. SAME THING AS MOST, WATER, DRINK SOMEE IT'S REALLY HELPFULL.<br><br>2. DOING A BIT OF SELF MASSAGE OR STRETCHING CAN BE REALLY HELPFULL TOO, SO IF POSSIBLE PLEASE TRY THAT.<br><br>
+                           3. KEEP LIKE MOVING AROUND WHEN URE LYING DOWN BROR AND TRY NOT TO STAY STILL FOR TOO LONG, BUT DONT MOVE TOO MUCH EITHER JUST A BIT AND SLWOLY, IF YOU CAN. TRY PILLOWS UNDER UR KNEES, HUGGING THEM, ETC.
+                           4. <b>AFTER</b>THE PAIN GOES AWAY, MAKE SURE TO LIKE WALK A LITTLE AND STRETCH A LITTLE JUST TO RELIEVE YOUR BACKK
+
+                           <br><br><br> OFCC CONTAACT ME IF YOU NEED ANYTHING AND GET BETTER SOONN BRORO.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800/80 rounded-2xl p-4 card-shadow transition-all duration-300 hover:border-pink-900/50">
+                    <button onclick="toggleCard('card-blood')" class="w-full flex items-center justify-between text-left focus:outline-none">
+                        <span class="font-bold text-sm text-gray-200 flex items-center"><span class="text-base mr-2">🩸</span> Too much blood</span>
+                        <span id="card-blood-arrow" class="text-xs text-gray-400 transform transition-transform duration-250">▼</span>
+                    </button>
+                    <div id="card-blood" class="accordion-content">
+                        <p class="text-xs text-gray-400 font-medium leading-relaxed pt-3 border-t border-gray-800/60 mt-2 bg-purple-950/10 p-2.5 rounded-xl">
+                             THIS HAPPENED A LOT DURING UR JUNE/JULY PERIOD, SOO<br><br>
+                             1. IKK VERY SHCKING, BUT DRINK LOTS OF WATERRR, IT HELPS YOU STAY HYDRATED.<br><br>
+                             2. TRY EATING IRON RICH FOODS, IT WONT STOP THE BLEEEDING BUT IT'LL HELP YOU STAY STRONGERR WHEN THERES A LOT, SUCH AS MEAT, LENTILS, BEANS,HIGH VITAMIN C, ETCC.<br><br>
+                             3. IF ITS TOO MUCH BRO, AND ITS MUCH LONGER AND HIGHER IN VOLUME THAN USUAL, <b>PLEASE</b> CONNSIDER TALKING TO A DOCTOR, CAUSE THESE THINGS CAN REALLY BE SERIOUS.
+
+                             <br><br><br>
+
+                             AND OFCOURSE, FEEL FREE TOTAKE ANY TIME AWAY FROM ME, AS MUCH AS NEEDED TO SETTLE DOWN, IF LIKE THE CARPETS BLOODY, OR THE BEDSHEET, ETC. 
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800/80 rounded-2xl p-4 card-shadow transition-all duration-300 hover:border-pink-900/50">
+                    <button onclick="toggleCard('card-fatigue')" class="w-full flex items-center justify-between text-left focus:outline-none">
+                        <span class="font-bold text-sm text-gray-200 flex items-center"><span class="text-base mr-2">💤</span> Fatigue / Tiredness (due to loss of blood)</span>
+                        <span id="card-fatigue-arrow" class="text-xs text-gray-400 transform transition-transform duration-250">▼</span>
+                    </button>
+                    <div id="card-fatigue" class="accordion-content">
+                        <p class="text-xs text-gray-400 font-medium leading-relaxed pt-3 border-t border-gray-800/60 mt-2 bg-purple-950/10 p-2.5 rounded-xl">
+                             BLOOD LOSSS CAN BE VERY TIRINGG BROR AS UVE TOLD MEE. <br><br> 
+                             1. AGAIN, WATER, NO EXPLANATIONN.<br><br>
+                             2. IT'S BASICALLY THE SAME AS EVERYTHING IN THE CARD ABOVE ABOUT TOO MUCH BLOOD LOSS.<br><br>
+                             3. ONLY DIFFERENT THING IS YOU NEED TO TAKE MORE REST BROO, AND SLEEP MOREE.<br><br><br>
+
+                             TELL ME IF YOU NEED ANYYYTHINGGG PLEAAASEEEE.
+                        </p>
+                    </div>
+                </div>
+
+
+
+                <div class="bg-gray-900 border border-gray-800/80 rounded-2xl p-4 card-shadow transition-all duration-300 hover:border-pink-900/50">
+                    <button onclick="toggleCard('card-sad-p')" class="w-full flex items-center justify-between text-left focus:outline-none">
+                        <span class="font-bold text-sm text-gray-200 flex items-center"><span class="text-base mr-2">🥺</span> Feeling Sad/Down</span>
+                        <span id="card-sad-p-arrow" class="text-xs text-gray-400 transform transition-transform duration-250">▼</span>
+                    </button>
+                    <div id="card-sad-p" class="accordion-content">
+                        <p class="text-xs text-gray-400 font-medium leading-relaxed pt-3 border-t border-gray-800/60 mt-2 bg-purple-950/10 p-2.5 rounded-xl">
+                          IF YOURE FEEELING SADD BROO THENN<br><br>
+
+                          1.  FEEL FREE TO TAKE AS MUCH TIME AWAY FROM ME AS YOU WANT, AND I JUST ALWYS HOPE YOU GET BETTER BRO, IF POSSIBLE JUST INFORM ME BEFORE HAND THAT URE FEELING DOWN AND ILL GIVE YOU SPACE.
+                          <br><br>
+                          2.IF YOU NEED TO TALK TO ME PLEASE DO SO IM ALWAYS THERE FOR YOU AND READY TO CHEER YOU UP AND ANY MOMENT BRO, ILL BE WAITING.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xs font-black tracking-wider text-amber-400 uppercase bg-amber-950/20 px-3 py-1.5 rounded-xl">
+                    not related to periods
+                </h2>
+                <span class="text-[0.65rem] text-amber-500 font-bold tracking-tight">General Wellness</span>
+            </div>
+            
+            <div class="space-y-3">
+                <div class="bg-red-950/10 border border-red-900/30 rounded-2xl p-4 card-shadow transition-all duration-300 hover:border-red-900/60">
+                    <button onclick="toggleCard('card-allergic')" class="w-full flex items-center justify-between text-left focus:outline-none">
+                        <span class="font-bold text-sm text-red-300 flex items-center"><span class="text-base mr-2">🚨</span> ALLERGIC REACTION (IMPORTANT)</span>
+                        <span id="card-allergic-arrow" class="text-xs text-red-400 transform transition-transform duration-250">▼</span>
+                    </button>
+                    <div id="card-allergic" class="accordion-content">
+                        <p class="text-xs text-red-400 font-medium leading-relaxed pt-3 border-t border-red-900/40 mt-2 bg-gray-900/60 p-2.5 rounded-xl">
+                            <strong>Important Notice:</strong> 1. IF YOURE WITH SOMEONE, LIKE A PARENT LET THEM KNOW INSTANTLY. <br><br>
+                            2. SIT STRIGHT UP DONT LIE FLAT, AND LOOSEN ANYTHING TIGHT.<br><br>
+                            3. CALL 998 OR EMERGENCY IMMEDIATELY IF YOU FEEL LIKE ITS REALLY SEVERE AND YOU ATE TOO MUCH PEANUTS, OR FULLY CONSUMED ANY.<br><br>
+                            4. IF YOU HAVE AN EPIPEN <b>USE IT.</b>
+
+                            <br><br><br> JUST GET BETTER SOON BRO AND DONT WORRY ABOUT CONTACTING ANYONE ELSE, NOT EVEN ME, YOU ARE MUCH MORE IMPORTANT THAN ANYTHING.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-red-950/10 border border-red-900/30 rounded-2xl p-4 card-shadow transition-all duration-300 hover:border-red-900/60">
+                    <button onclick="toggleCard('card-breathe')" class="w-full flex items-center justify-between text-left focus:outline-none">
+                        <span class="font-bold text-sm text-red-300 flex items-center"><span class="text-base mr-2">🚨</span> unable to breathe (IMPORTANT) </span>
+                        <span id="card-breathe-arrow" class="text-xs text-red-400 transform transition-transform duration-250">▼</span>
+                    </button>
+                    <div id="card-breathe" class="accordion-content">
+                        <p class="text-xs text-red-400 font-medium leading-relaxed pt-3 border-t border-red-900/40 mt-2 bg-gray-900/60 p-2.5 rounded-xl">
+                            
+                            <strong>Important Notice:</strong> 
+                            THIS IS SERIOUS BRO<br><br>
+                            1. YOU NEED TO SIT UP STRAIGHT AND NOT LIE FLAT<br><br>
+                            2. TRY TO STAY CALM, AND BREATHE SLOWLY, IN AND OUT.<br><br>
+                            3. 5 SECONDS IN, 5 SECONDS OUT, CALM DOWN, EVERYTHINGS OKAY <br><br>
+                            4. TRY TO GET IN SOME FRESH AIR AND WHENEVER POSSIBLE, DRINK SOME WATER.<br><br>
+                            5. IF YOU THINK THIS IS HAPPENING CAUSE UR STRESSED OR SMTH, PLEASE DISTRCT URSELF, JUST DO SMTH, OR GO FOR A WALK.<br><br>
+                            <b>6. IMPORTANT! IF ITS NOT  GOING AWAY FOR REALLY LONG PLEASE CHECK WITH A DOCTOR AND TELL UR PARENTS OR AN ADULT BRO.</b><br><br><br>
+                            
+                            AND OFCC CONTACT ME BRO IF YOU NEED ANYTHING, ILL TRY MY BEST TO GET YOU TO FEEL BETTER AND CALM YOU DOWNN BROO, ALWAYS HERE FOR YOU.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800/80 rounded-2xl p-4 card-shadow transition-all duration-300 hover:border-amber-900/40">
+                    <button onclick="toggleCard('card-weak')" class="w-full flex items-center justify-between text-left focus:outline-none">
+                        <span class="font-bold text-sm text-gray-200 flex items-center"><span class="text-base mr-2">📉</span> weakness</span>
+                        <span id="card-weak-arrow" class="text-xs text-gray-400 transform transition-transform duration-250">▼</span>
+                    </button>
+                    <div id="card-weak" class="accordion-content">
+                        <p class="text-xs text-gray-400 font-medium leading-relaxed pt-3 border-t border-gray-800/60 mt-2 bg-amber-950/5 p-2.5 rounded-xl">
+                       OHHH SO YOURE FEELING WEAKK, UR PROLLY TIREDD RNNN SO I HOPE YOU GET BETTTER SOONN. <br><br>
+                       1. WATERRRRRRRRRRRRRRRRRRRR<br><br>
+                       2. SOMETIMES, WEAKNESSS CAN ALSO BE CAUED BY STRESS, SO IF YOU'RE FEELING STRESSED BROO PLEASE TRY NOT TOO, TRY TO RELAX UR MIND DOING WHATEVER DOES SOO.<br><br>
+                       3. GET SOMEE RESTT BROR AND LIE DOWNNN, TRY TO LEEO IF POSSIBLE.<br><br>
+                       4. TRY EATING SOMETHINGG, SOMETHING LIKE EGG, OR PICKLE UR FAV, ETCCC AND GET SOME ENERGY.<br><br><br>
+                       
+                       I HOPE YOU FEEL SOO MUCH BETTER SOOOONN BROO AND OFC CONTACT ME IF YOU NEED SMTHH
+
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800/80 rounded-2xl p-4 card-shadow transition-all duration-300 hover:border-amber-900/40">
+                    <button onclick="toggleCard('card-dizzy')" class="w-full flex items-center justify-between text-left focus:outline-none">
+                        <span class="font-bold text-sm text-gray-200 flex items-center"><span class="text-base mr-2">🌀</span> dizzyness</span>
+                        <span id="card-dizzy-arrow" class="text-xs text-gray-400 transform transition-transform duration-250">▼</span>
+                    </button>
+                    <div id="card-dizzy" class="accordion-content">
+                        <p class="text-xs text-gray-400 font-medium leading-relaxed pt-3 border-t border-gray-800/60 mt-2 bg-amber-950/5 p-2.5 rounded-xl">
+                             THIS IS PRETTY SERIOUS BROO<br><br>
+                             1. PLEASE SIT DOWN AND LIE DOWN AS SOON AS POSSIBLE AND TRY NOT TOO MOVE TOO NUCHH<br><br>
+                             2. WHENEVER YOU CAN DRINK SOME WATER BROO AND DRINK LOTSS.<br><br>
+                             3. MAKE SURE <b>NOT</b> TO STAND UP TOO FAST BROO, AND IF YOU NEED TO BE SLOW AND CAREFUL, BUT JUST WAIT IT OUT TILL YOURE OKAY BRO <br><br>
+                             4. A HOT OR STUFFY ROOM ISNT GOODD, SO STAYING IN A COLDER PLACE IS MUCH BETTER FOR YOU <br><br>
+                             5. EAT A SNACK OR ANYTHING THAT MIGHT MAKE YOU FEEL BETTER BROO, MAINLY UR FAV PICKLES AND STUFFF.
+
+                             <br><br><br>
+
+                             PLEASE JUST TAKE REST AND CONTACT ME AS SOOONNN AS POSSIBLE BROO, TAKE REST AND I HOPE YOU GET BETTER SO SOONN.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800/80 rounded-2xl p-4 card-shadow transition-all duration-300 hover:border-amber-900/40">
+                    <button onclick="toggleCard('card-headache-np')" class="w-full flex items-center justify-between text-left focus:outline-none">
+                        <span class="font-bold text-sm text-gray-200 flex items-center"><span class="text-base mr-2">🤕</span> headache</span>
+                        <span id="card-headache-np-arrow" class="text-xs text-gray-400 transform transition-transform duration-250">▼</span>
+                    </button>
+                    <div id="card-headache-np" class="accordion-content">
+                        <p class="text-xs text-gray-400 font-medium leading-relaxed pt-3 border-t border-gray-800/60 mt-2 bg-amber-950/5 p-2.5 rounded-xl">
+                             FOR HEADACHESS <br><br>
+
+                             1. MAKE SURE TO DRINK WATER OFCC<br><br>
+                             2. TRY TO REST IN LIKE A SUPER QUIET AND UNDISTURBED ROOM, TO GET RID OF BACKGROUND NOISE AND CLEAR UR HEAD BROO. <br><br>
+                             3. TAKE A BREAK FROM ANY SCREENS AND REST YOUR EYES, PREFERABLY CLOSE HTEM FOR A LITTLE While<br><br>
+                             4. TRY DOING SOMETHING THAT YOU ENJOY OR SMTH THAT RELAXES YOUU, LIKE A WALK OR ANYTHINGG.<br><br>
+                             5. MAKE SURE TO BE IN COOL PLACE TO COOL DOWN UR HEAD AND BODYY<br><br><br>
+
+                             JUST GET BETTER SOONN BROR IM HERER FOR U AND CONTACT ME IF YOU NEED TO DISTRACT YOURSELFF.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 border border-gray-800/80 rounded-2xl p-4 card-shadow transition-all duration-300 hover:border-amber-900/40">
+                    <button onclick="toggleCard('card-stomach-np')" class="w-full flex items-center justify-between text-left focus:outline-none">
+                        <span class="font-bold text-sm text-gray-200 flex items-center"><span class="text-base mr-2">🤢</span> stomach pain (not due to period)</span>
+                        <span id="card-stomach-np-arrow" class="text-xs text-gray-400 transform transition-transform duration-250">▼</span>
+                    </button>
+                    <div id="card-stomach-np" class="accordion-content">
+                        <p class="text-xs text-gray-400 font-medium leading-relaxed pt-3 border-t border-gray-800/60 mt-2 bg-amber-950/5 p-2.5 rounded-xl">
+                         SO FORR NORMAL STOMACH PAINN <br><br>
+                         1. OFCC DRINK WATERR <br><br>
+                         2. EAT BLAND FOODSSS LIKE BANANAS AND RICE AND STUFF AND NOTHING SPICY (THOUGH I KNOWW YOU DONT DO THAT ANYWAY)<br><br>
+                         3. JUST LIKE THE CRAMPS BROO STAY IN A WARM ENVIORNMENT, CURL UP, AND TAKE SOME RESTT BROO<br><br>
+                         4. MAKE SURE THAT IF POSSIBLE, THE WATER IS WARM, AND YOU CAN PLACE MAYBE SOME WARM PAD ON UR STOMCHHM OR LIKE A HEATING PADD.<br><br><br>
+                         OFCC ASK ME IF YOU NEED ANYTHING IM ALWAYS THEREE.
+                        </p>
+                    </div>
+                </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-950 via-gray-950/90 to-transparent backdrop-blur-xs z-40 text-center flex justify-center">
+        <a href="index.html" class="w-full max-w-[220px] bg-[var(--theme-primary)] text-white font-bold text-xs tracking-wide uppercase py-3 rounded-full shadow-lg hover:opacity-90 transition-all flex items-center justify-center space-x-2">
+            <span>🏠</span>
+            <span>Back to Home</span>
+        </a>
+    </div>
+
+    <div id="settingsModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-gray-900 text-white rounded-3xl p-6 w-full max-w-sm border border-gray-800 mx-4 max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div class="flex items-center justify-between border-b pb-3 mb-4 border-gray-800">
+                <h3 class="text-lg font-black tracking-tight">App Configuration</h3>
+                <button onclick="toggleSettingsModal(false)" class="text-gray-400 hover:text-white text-xl font-bold">✕</button>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Display Mode</label>
+                <div class="w-full text-center border-2 border-[var(--theme-primary)] bg-purple-950/20 p-2.5 rounded-xl font-bold text-xs text-[var(--theme-primary)]">
+                    🌙 Dark Mode Active
+                </div>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Color Palette Theme</label>
+                <div class="space-y-1.5 text-xs font-bold">
+                    <button onclick="setPaletteTheme('pink')" class="w-full border p-3 rounded-xl flex items-center justify-between bg-gray-800 border-gray-700">
+                        <span>Sakura Pink</span><span class="w-3 h-3 rounded-full bg-[#FF4B72]"></span>
+                    </button>
+                    <button onclick="setPaletteTheme('green')" class="w-full border p-3 rounded-xl flex items-center justify-between bg-gray-800 border-gray-700">
+                        <span>Emerald Green</span><span class="w-3 h-3 rounded-full bg-[#10B981]"></span>
+                    </button>
+                    <button onclick="setPaletteTheme('purple')" class="w-full border p-3 rounded-xl flex items-center justify-between bg-gray-800 border-gray-700">
+                        <span>Midnight Velvet</span><span class="w-3 h-3 rounded-full bg-[#8B5CF6]"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="border-t pt-4 border-gray-800">
+                <button onclick="toggleCard('aboutDrop')" class="w-full flex items-center justify-between font-bold text-xs text-gray-400 uppercase tracking-wider focus:outline-none">
+                    <span>ℹ️ About </span>
+                    <span id="aboutDrop-arrow" class="transition-transform duration-200">▼</span>
+                </button>
+                <div id="aboutDrop" class="accordion-content">
+                    <p class="text-xs text-gray-400 leading-relaxed pt-2 pl-2">
+                        I WROTE ALLLL OF THIS FOR YOUU BROR LIKE HOW ID WRITE IF WE WERE TALKINGG, SO YOU FIND IT COMFORTING AND HELPFULL.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleCard(id) {
+            const content = document.getElementById(id);
+            const arrow = document.getElementById(`${id}-arrow`);
+            if (content.classList.contains('open')) {
+                content.classList.remove('open');
+                if(arrow) arrow.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('open');
+                if(arrow) arrow.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        function setPaletteTheme(themeName) {
+            document.body.classList.remove('theme-pink', 'theme-green', 'theme-purple');
+            document.body.classList.add(`theme-${themeName}`);
+            localStorage.setItem('flont_palette_theme', themeName);
+        }
+
+        function toggleSettingsModal(open) {
+            const modal = document.getElementById('settingsModal');
+            if(open) {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setPaletteTheme(localStorage.getItem('flont_palette_theme') || 'pink');
+            
+            // Handle loading screen exit gracefully after page data renders
+            setTimeout(() => {
+                const loader = document.getElementById('loadingScreen');
+                loader.classList.add('opacity-0', 'pointer-events-none');
+            }, 1400); // Gives a high-quality smooth load experience
+        });
+    </script>
+</body>
+</html>
