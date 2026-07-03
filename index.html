@@ -414,6 +414,8 @@
         let s8Selected = false;
         
         let currentDayPointer = 5;
+        let realDayPointer = 5;
+        let previewOffsetDays = 0;
         const cycleLengthDays = 28;
         const cycleStartStorageKey = 'flont_cycle_start_date';
         const fallbackCycleStartDateKey = '2026-06-29';
@@ -733,30 +735,35 @@
             return savedCycleStart || dateFromLocalKey(fallbackCycleStartDateKey);
         }
 
-        function getCurrentCycleInfo() {
-            const today = new Date();
+        function getCycleInfoForDate(targetDate = new Date()) {
             const baseCycleStart = getBaseCycleStartDate();
-            const daysSinceBaseStart = daysBetweenLocalDates(baseCycleStart, today);
+            const daysSinceBaseStart = daysBetweenLocalDates(baseCycleStart, targetDate);
             const completedCycles = Math.floor(daysSinceBaseStart / cycleLengthDays);
             const normalizedDayIndex = ((daysSinceBaseStart % cycleLengthDays) + cycleLengthDays) % cycleLengthDays;
             const currentCycleStart = addDays(baseCycleStart, completedCycles * cycleLengthDays);
 
             return {
                 day: normalizedDayIndex + 1,
-                startDate: currentCycleStart
+                startDate: currentCycleStart,
+                date: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate())
             };
         }
 
-        function syncCycleDayFromDeviceDate() {
-            const cycleInfo = getCurrentCycleInfo();
-            currentDayPointer = cycleInfo.day;
+        function syncCycleDayFromDeviceDate(resetPreview = true) {
+            const realCycleInfo = getCycleInfoForDate(new Date());
+            realDayPointer = realCycleInfo.day;
+            if (resetPreview) previewOffsetDays = 0;
+
+            const visibleCycleInfo = getCycleInfoForDate(addDays(new Date(), previewOffsetDays));
+            currentDayPointer = visibleCycleInfo.day;
+
             const dayLabel = document.getElementById('lblTestDay');
             if (dayLabel) dayLabel.innerText = `Day ${currentDayPointer}`;
-            return cycleInfo;
+            return visibleCycleInfo;
         }
 
         function refreshCycleDashboard() {
-            syncCycleDayFromDeviceDate();
+            syncCycleDayFromDeviceDate(true);
             if (currentScreen === 10) {
                 renderCalendarDashboard();
                 renderSymptomIntelligenceCard();
@@ -778,27 +785,17 @@
             if (!document.hidden) refreshCycleDashboard();
         });
 
-        function setCycleStartFromVisibleDay(day) {
-            const today = new Date();
-            const adjustedStartDate = addDays(today, -(day - 1));
-            localStorage.setItem(cycleStartStorageKey, getLocalDateKey(adjustedStartDate));
-            syncCycleDayFromDeviceDate();
-        }
-
         function adjustTestDay(amount) {
-            syncCycleDayFromDeviceDate();
-            let nextDay = currentDayPointer + amount;
-            if (nextDay < 1) nextDay = cycleLengthDays;
-            if (nextDay > cycleLengthDays) nextDay = 1;
-
-            setCycleStartFromVisibleDay(nextDay);
+            previewOffsetDays += amount;
+            syncCycleDayFromDeviceDate(false);
             renderCalendarDashboard();
             renderSymptomIntelligenceCard();
         }
 
         function resetCycleToDayOne() {
             localStorage.setItem(cycleStartStorageKey, getLocalDateKey(new Date()));
-            syncCycleDayFromDeviceDate();
+            previewOffsetDays = 0;
+            syncCycleDayFromDeviceDate(true);
             renderCalendarDashboard();
             renderSymptomIntelligenceCard();
         }
@@ -815,7 +812,7 @@
         }
 
         function renderCalendarDashboard() {
-            const cycleInfo = syncCycleDayFromDeviceDate();
+            const cycleInfo = syncCycleDayFromDeviceDate(false);
             const daysGrid = document.getElementById('calendarDaysGrid');
             const alertZone = document.getElementById('alertBannerZone');
             const calendarMonthHeader = document.getElementById('calendarMonth');
@@ -847,19 +844,19 @@
 
             activeSegmentSlice.forEach(day => {
                 let bgStyle = "text-gray-700 bg-transparent";
-                const isMatchForToday = (day.dayIdx === currentDayPointer);
+                const isMatchForSelectedDay = (day.dayIdx === currentDayPointer);
 
                 if (day.dayIdx >= 1 && day.dayIdx <= 7) {
-                    if (isMatchForToday) bgStyle = "bg-[#FF4B72] text-white ring-4 ring-pink-200 rounded-full";
+                    if (isMatchForSelectedDay) bgStyle = "bg-[#FF4B72] text-white ring-4 ring-pink-200 rounded-full";
                     else bgStyle = "bg-rose-50 text-[#FF4B72] rounded-full";
                 } else if (day.dayIdx >= 13 && day.dayIdx <= 15) {
-                    if (isMatchForToday) bgStyle = "bg-purple-500 text-white ring-4 ring-purple-100 rounded-full";
+                    if (isMatchForSelectedDay) bgStyle = "bg-purple-500 text-white ring-4 ring-purple-100 rounded-full";
                     else bgStyle = "bg-purple-50 text-purple-600 rounded-full";
                 } else if (day.dayIdx >= 16 && day.dayIdx <= 28) {
-                    if (isMatchForToday) bgStyle = "bg-amber-500 text-white ring-4 ring-amber-100 rounded-full";
+                    if (isMatchForSelectedDay) bgStyle = "bg-amber-500 text-white ring-4 ring-amber-100 rounded-full";
                     else bgStyle = "bg-amber-50 text-amber-700 rounded-full";
                 } else {
-                    if (isMatchForToday) bgStyle = "bg-gray-900 text-white ring-4 ring-gray-200 rounded-full";
+                    if (isMatchForSelectedDay) bgStyle = "bg-gray-900 text-white ring-4 ring-gray-200 rounded-full";
                 }
 
                 daysGrid.innerHTML += `
