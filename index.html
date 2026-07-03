@@ -342,7 +342,7 @@
             <span class="text-[0.7rem] font-bold text-pink-500 tracking-wider uppercase block mb-1">🛠️ CYCLE TIMELINE DECK (ONLY FOR ADJUSTMENTS)</span>
             <div class="flex items-center justify-center space-x-2">
                 <button onclick="adjustTestDay(-1)" class="px-3 py-1 bg-white text-pink-600 font-bold border border-pink-200 rounded-lg text-xs shadow-xs active:scale-95 transition-transform">◀ Prev</button>
-                <span class="text-sm font-black text-pink-700 min-w-[90px]"><span id="lblTestDay">Day 5</span></span>
+                <span class="text-sm font-black text-pink-700 min-w-[90px]"><span id="lblTestDay">Day 6</span></span>
                 <button onclick="adjustTestDay(1)" class="px-3 py-1 bg-white text-pink-600 font-bold border border-pink-200 rounded-lg text-xs shadow-xs active:scale-95 transition-transform">Next ▶</button>
             </div>
             <button onclick="triggerRedoIntroFlow()" class="mt-2 text-[0.68rem] font-bold text-gray-500 hover:text-[#FF4B72] transition-colors underline decoration-dotted">
@@ -413,7 +413,11 @@
         let s7Selected = false;
         let s8Selected = false;
         
-        let currentDayPointer = 5; 
+        let currentDayPointer = 5;
+        const cycleLengthDays = 28;
+        const cycleStartStorageKey = 'flont_cycle_start_date';
+        const fallbackCycleStartDateKey = '2026-06-29';
+        let cycleDateSyncTimer = null;
 
         const screens = [
             document.getElementById('screen0'), document.getElementById('screen1'),
@@ -699,24 +703,119 @@
         // ================= DYNAMIC LOGIC ENGINE ===================
         // ==========================================================
         
+        function getLocalDateKey(date = new Date()) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function dateFromLocalKey(dateKey) {
+            const parts = String(dateKey || '').split('-').map(Number);
+            if (parts.length !== 3 || parts.some(Number.isNaN)) return null;
+            return new Date(parts[0], parts[1] - 1, parts[2]);
+        }
+
+        function addDays(date, amount) {
+            const nextDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            nextDate.setDate(nextDate.getDate() + amount);
+            return nextDate;
+        }
+
+        function daysBetweenLocalDates(startDate, endDate) {
+            const cleanStart = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+            const cleanEnd = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+            return Math.floor((cleanEnd - cleanStart) / 86400000);
+        }
+
+        function getBaseCycleStartDate() {
+            const savedCycleStart = dateFromLocalKey(localStorage.getItem(cycleStartStorageKey));
+            return savedCycleStart || dateFromLocalKey(fallbackCycleStartDateKey);
+        }
+
+        function getCurrentCycleInfo() {
+            const today = new Date();
+            const baseCycleStart = getBaseCycleStartDate();
+            const daysSinceBaseStart = daysBetweenLocalDates(baseCycleStart, today);
+            const completedCycles = Math.floor(daysSinceBaseStart / cycleLengthDays);
+            const normalizedDayIndex = ((daysSinceBaseStart % cycleLengthDays) + cycleLengthDays) % cycleLengthDays;
+            const currentCycleStart = addDays(baseCycleStart, completedCycles * cycleLengthDays);
+
+            return {
+                day: normalizedDayIndex + 1,
+                startDate: currentCycleStart
+            };
+        }
+
+        function syncCycleDayFromDeviceDate() {
+            const cycleInfo = getCurrentCycleInfo();
+            currentDayPointer = cycleInfo.day;
+            const dayLabel = document.getElementById('lblTestDay');
+            if (dayLabel) dayLabel.innerText = `Day ${currentDayPointer}`;
+            return cycleInfo;
+        }
+
+        function refreshCycleDashboard() {
+            syncCycleDayFromDeviceDate();
+            if (currentScreen === 10) {
+                renderCalendarDashboard();
+                renderSymptomIntelligenceCard();
+            }
+        }
+
+        function scheduleRealDateSync() {
+            if (cycleDateSyncTimer) clearTimeout(cycleDateSyncTimer);
+            const now = new Date();
+            const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+            cycleDateSyncTimer = setTimeout(() => {
+                refreshCycleDashboard();
+                scheduleRealDateSync();
+            }, nextMidnight - now);
+        }
+
+        window.addEventListener('focus', refreshCycleDashboard);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) refreshCycleDashboard();
+        });
+
+        function setCycleStartFromVisibleDay(day) {
+            const today = new Date();
+            const adjustedStartDate = addDays(today, -(day - 1));
+            localStorage.setItem(cycleStartStorageKey, getLocalDateKey(adjustedStartDate));
+            syncCycleDayFromDeviceDate();
+        }
+
         function adjustTestDay(amount) {
-            currentDayPointer += amount;
-            if (currentDayPointer < 1) currentDayPointer = 28;
-            if (currentDayPointer > 28) currentDayPointer = 1;
-            
-            document.getElementById('lblTestDay').innerText = `Day ${currentDayPointer}`;
+            syncCycleDayFromDeviceDate();
+            let nextDay = currentDayPointer + amount;
+            if (nextDay < 1) nextDay = cycleLengthDays;
+            if (nextDay > cycleLengthDays) nextDay = 1;
+
+            setCycleStartFromVisibleDay(nextDay);
             renderCalendarDashboard();
             renderSymptomIntelligenceCard();
         }
 
         function resetCycleToDayOne() {
-            currentDayPointer = 1;
-            document.getElementById('lblTestDay').innerText = `Day ${currentDayPointer}`;
+            localStorage.setItem(cycleStartStorageKey, getLocalDateKey(new Date()));
+            syncCycleDayFromDeviceDate();
             renderCalendarDashboard();
             renderSymptomIntelligenceCard();
         }
 
+        function formatCalendarMonthHeader(firstDate, lastDate) {
+            const firstMonth = firstDate.toLocaleString('en-US', { month: 'long' });
+            const lastMonth = lastDate.toLocaleString('en-US', { month: 'long' });
+            const firstYear = firstDate.getFullYear();
+            const lastYear = lastDate.getFullYear();
+
+            if (firstMonth === lastMonth && firstYear === lastYear) return `${firstMonth} ${firstYear}`;
+            if (firstYear === lastYear) return `${firstMonth} / ${lastMonth} ${firstYear}`;
+            return `${firstMonth} ${firstYear} / ${lastMonth} ${lastYear}`;
+        }
+
         function renderCalendarDashboard() {
+            const cycleInfo = syncCycleDayFromDeviceDate();
             const daysGrid = document.getElementById('calendarDaysGrid');
             const alertZone = document.getElementById('alertBannerZone');
             const calendarMonthHeader = document.getElementById('calendarMonth');
@@ -729,54 +828,22 @@
                 alertZone.classList.add('hidden');
             }
 
-            // Dynamic view page shifting calculation engine setup
-            let calendarViewOffset = (currentDayPointer > 16) ? 14 : 0;
-            
-            if (currentDayPointer > 16) {
-                calendarMonthHeader.innerText = "July / August 2026";
-            } else {
-                calendarMonthHeader.innerText = "June / July 2026";
+            const calendarStartDayIdx = (currentDayPointer > 16) ? 13 : -1;
+            const activeSegmentSlice = [];
+
+            for (let i = 0; i < 21; i++) {
+                const dayIdx = calendarStartDayIdx + i;
+                const realDate = addDays(cycleInfo.startDate, dayIdx - 1);
+                activeSegmentSlice.push({
+                    num: realDate.getDate(),
+                    label: realDate.toLocaleString('en-US', { month: 'short' }),
+                    dayIdx
+                });
             }
 
-            const masterTimelineDeck = [
-                { num: 27, label: 'Jun', dayIdx: -1 },
-                { num: 28, label: 'Jun', dayIdx: 0 },
-                { num: 29, label: 'Jun', dayIdx: 1 },
-                { num: 30, label: 'Jun', dayIdx: 2 },
-                { num: 1, label: 'Jul', dayIdx: 3 },
-                { num: 2, label: 'Jul', dayIdx: 4 },
-                { num: 3, label: 'Jul', dayIdx: 5 },
-                { num: 4, label: 'Jul', dayIdx: 6 },
-                { num: 5, label: 'Jul', dayIdx: 7 },
-                { num: 6, label: 'Jul', dayIdx: 8 },
-                { num: 7, label: 'Jul', dayIdx: 9 },
-                { num: 8, label: 'Jul', dayIdx: 10 },
-                { num: 9, label: 'Jul', dayIdx: 11 },
-                { num: 10, label: 'Jul', dayIdx: 12 },
-                { num: 11, label: 'Jul', dayIdx: 13 },
-                { num: 12, label: 'Jul', dayIdx: 14 },
-                { num: 13, label: 'Jul', dayIdx: 15 },
-                { num: 14, label: 'Jul', dayIdx: 16 },
-                { num: 15, label: 'Jul', dayIdx: 17 },
-                { num: 16, label: 'Jul', dayIdx: 18 },
-                { num: 17, label: 'Jul', dayIdx: 19 },
-                { num: 18, label: 'Jul', dayIdx: 20 },
-                { num: 19, label: 'Jul', dayIdx: 21 },
-                { num: 20, label: 'Jul', dayIdx: 22 },
-                { num: 21, label: 'Jul', dayIdx: 23 },
-                { num: 22, label: 'Jul', dayIdx: 24 },
-                { num: 23, label: 'Jul', dayIdx: 25 },
-                { num: 24, label: 'Jul', dayIdx: 26 },
-                { num: 25, label: 'Jul', dayIdx: 27 },
-                { num: 26, label: 'Jul', dayIdx: 28 },
-                { num: 27, label: 'Jul', dayIdx: 29 },
-                { num: 28, label: 'Jul', dayIdx: 30 },
-                { num: 29, label: 'Jul', dayIdx: 31 },
-                { num: 1, label: 'Aug', dayIdx: 32 },
-                { num: 2, label: 'Aug', dayIdx: 33 }
-            ];
-
-            let activeSegmentSlice = masterTimelineDeck.slice(calendarViewOffset, calendarViewOffset + 21);
+            const firstVisibleDate = addDays(cycleInfo.startDate, calendarStartDayIdx - 1);
+            const lastVisibleDate = addDays(firstVisibleDate, 20);
+            calendarMonthHeader.innerText = formatCalendarMonthHeader(firstVisibleDate, lastVisibleDate);
 
             activeSegmentSlice.forEach(day => {
                 let bgStyle = "text-gray-700 bg-transparent";
@@ -802,7 +869,6 @@
                     </div>`;
             });
         }
-
         const fullDatabase = {
             mensesEarly: {
                 phase: "Menses Phase (Follicular Cycle Start)",
@@ -1022,6 +1088,8 @@
             }
         }
 
+        syncCycleDayFromDeviceDate();
+        scheduleRealDateSync();
         updateNavigationUI();
         syncButtonState();
     </script>
