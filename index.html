@@ -359,34 +359,38 @@
         </header>
 
         <div id="alertBannerZone" class="w-full hidden mb-4">
-            <div class="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 flex flex-col space-y-3 shadow-xs animate-pulse">
-                <div class="flex items-center space-x-2">
-                    <span class="text-lg">⚠️</span>
-                    <span class="text-xs font-black tracking-tight">Period may start soon. Prepare your logs!</span>
+            <div id="cycleAlertCard" class="bg-red-50 border border-red-200 text-red-700 rounded-2xl p-4 flex flex-col space-y-3 shadow-xs">
+                <div class="flex items-start space-x-2">
+                    <span id="cycleAlertIcon" class="text-lg">!</span>
+                    <div class="flex-1">
+                        <span id="cycleAlertTitle" class="text-xs font-black tracking-tight block">Period may start soon. Prepare your logs!</span>
+                        <span id="cycleAlertSubtitle" class="text-[0.68rem] font-semibold opacity-80 block mt-1">Warnings begin on day 21.</span>
+                    </div>
                 </div>
-                <button onclick="resetCycleToDayOne()" class="w-full bg-red-600 hover:bg-red-700 text-white font-black text-xs tracking-tight uppercase py-3 rounded-xl shadow-xs transition-transform active:scale-95">
-                    CLICK WHEN YOUR NEXT PERIOD STARTS!
-                </button>
+                <div id="cycleActionButtons" class="flex flex-col gap-2"></div>
             </div>
         </div>
 
         <div class="w-full bg-white border border-gray-100 rounded-3xl p-5 shadow-sm mb-5">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="font-extrabold text-base tracking-tight text-gray-800" id="calendarMonth">June / July 2026</h3>
-                <span class="text-[0.7rem] font-bold text-gray-400">Continuous Dynamic Flow</span>
+                <h3 class="font-extrabold text-base tracking-tight text-gray-800" id="calendarMonth">Calendar</h3>
+                <div class="flex items-center gap-1">
+                    <button type="button" onclick="changeCalendarMonth(-1)" class="w-8 h-8 rounded-full border border-gray-100 bg-gray-50 text-gray-500 font-black active:scale-95" aria-label="Previous month">&lt;</button>
+                    <button type="button" onclick="changeCalendarMonth(1)" class="w-8 h-8 rounded-full border border-gray-100 bg-gray-50 text-gray-500 font-black active:scale-95" aria-label="Next month">&gt;</button>
+                </div>
             </div>
 
             <div class="grid grid-cols-7 gap-y-3 gap-x-1 text-center text-xs font-semibold text-gray-500 mb-2">
-                <div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div><div>Su</div>
+                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
             </div>
-            <div class="grid grid-cols-7 gap-y-3 gap-x-1 text-center font-bold text-sm" id="calendarDaysGrid">
+            <div class="grid grid-cols-7 gap-y-2 gap-x-1 text-center font-bold text-sm" id="calendarDaysGrid">
                 </div>
 
             <div class="mt-4 pt-3 border-t border-gray-50 flex flex-wrap gap-2 items-center justify-between text-[0.68rem] text-gray-400 font-medium">
-                <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-[#FF4B72] mr-1"></span>Mensus (Start)</div>
+                <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-[#FF4B72] mr-1"></span>Menses</div>
                 <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-purple-400 mr-1"></span>Ovulation</div>
-                <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 mr-1"></span>Luteal Phase</div>
-                <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-gray-900 mr-1"></span>Today/Follicical</div>
+                <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 mr-1"></span>Warning</div>
+                <div class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-gray-900 mr-1"></span>Today</div>
             </div>
         </div>
 
@@ -416,10 +420,17 @@
         let currentDayPointer = 5;
         let realDayPointer = 5;
         let previewOffsetDays = 0;
+        let calendarMonthOffset = 0;
         const cycleLengthDays = 28;
+        const maxExtendedCycleDays = 31;
         const cycleStartStorageKey = 'flont_cycle_start_date';
+        const cycleExtendedStorageKey = 'flont_cycle_extended_to_31';
+        const cycleLastNotificationStorageKey = 'flont_period_warning_last_notification';
+        const cycleVersionStorageKey = 'flont_cycle_logic_version';
+        const currentCycleLogicVersion = 'jul-04-2026-day-6-fix';
         const fallbackCycleStartDateKey = '2026-06-29';
         let cycleDateSyncTimer = null;
+        let periodNotificationTimer = null;
 
         const screens = [
             document.getElementById('screen0'), document.getElementById('screen1'),
@@ -488,6 +499,7 @@
                 updateNavigationUI();
                 renderCalendarDashboard();
                 renderSymptomIntelligenceCard();
+                schedulePeriodWarningNotifications();
             }
         });
 
@@ -735,17 +747,35 @@
             return savedCycleStart || dateFromLocalKey(fallbackCycleStartDateKey);
         }
 
+        function migrateCycleStorageForCurrentPeriod() {
+            if (localStorage.getItem(cycleVersionStorageKey) === currentCycleLogicVersion) return;
+            localStorage.setItem(cycleStartStorageKey, fallbackCycleStartDateKey);
+            localStorage.removeItem(cycleExtendedStorageKey);
+            localStorage.removeItem(cycleLastNotificationStorageKey);
+            localStorage.setItem(cycleVersionStorageKey, currentCycleLogicVersion);
+        }
+
+        function getVisibleDeviceDate() {
+            return addDays(new Date(), previewOffsetDays);
+        }
+
+        function isCycleExtended() {
+            return localStorage.getItem(cycleExtendedStorageKey) === 'true';
+        }
+
+        function getCycleDayForDate(targetDate, cycleStartDate = getBaseCycleStartDate()) {
+            return daysBetweenLocalDates(cycleStartDate, targetDate) + 1;
+        }
+
         function getCycleInfoForDate(targetDate = new Date()) {
             const baseCycleStart = getBaseCycleStartDate();
-            const daysSinceBaseStart = daysBetweenLocalDates(baseCycleStart, targetDate);
-            const completedCycles = Math.floor(daysSinceBaseStart / cycleLengthDays);
-            const normalizedDayIndex = ((daysSinceBaseStart % cycleLengthDays) + cycleLengthDays) % cycleLengthDays;
-            const currentCycleStart = addDays(baseCycleStart, completedCycles * cycleLengthDays);
+            const visibleDate = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
 
             return {
-                day: normalizedDayIndex + 1,
-                startDate: currentCycleStart,
-                date: new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate())
+                day: getCycleDayForDate(visibleDate, baseCycleStart),
+                startDate: baseCycleStart,
+                date: visibleDate,
+                extended: isCycleExtended()
             };
         }
 
@@ -754,7 +784,7 @@
             realDayPointer = realCycleInfo.day;
             if (resetPreview) previewOffsetDays = 0;
 
-            const visibleCycleInfo = getCycleInfoForDate(addDays(new Date(), previewOffsetDays));
+            const visibleCycleInfo = getCycleInfoForDate(getVisibleDeviceDate());
             currentDayPointer = visibleCycleInfo.day;
 
             const dayLabel = document.getElementById('lblTestDay');
@@ -768,6 +798,7 @@
                 renderCalendarDashboard();
                 renderSymptomIntelligenceCard();
             }
+            schedulePeriodWarningNotifications();
         }
 
         function scheduleRealDateSync() {
@@ -790,14 +821,91 @@
             syncCycleDayFromDeviceDate(false);
             renderCalendarDashboard();
             renderSymptomIntelligenceCard();
+            schedulePeriodWarningNotifications();
+        }
+
+        function changeCalendarMonth(amount) {
+            calendarMonthOffset += amount;
+            renderCalendarDashboard();
         }
 
         function resetCycleToDayOne() {
-            localStorage.setItem(cycleStartStorageKey, getLocalDateKey(new Date()));
-            previewOffsetDays = 0;
-            syncCycleDayFromDeviceDate(true);
+            const newPeriodStartDate = getVisibleDeviceDate();
+            localStorage.setItem(cycleStartStorageKey, getLocalDateKey(newPeriodStartDate));
+            localStorage.removeItem(cycleExtendedStorageKey);
+            localStorage.removeItem(cycleLastNotificationStorageKey);
+            localStorage.setItem(cycleVersionStorageKey, currentCycleLogicVersion);
+            calendarMonthOffset = 0;
+            const updatedCycleInfo = getCycleInfoForDate(newPeriodStartDate);
+            currentDayPointer = updatedCycleInfo.day;
+            realDayPointer = getCycleInfoForDate(new Date()).day;
+            const dayLabel = document.getElementById('lblTestDay');
+            if (dayLabel) dayLabel.innerText = `Day ${currentDayPointer}`;
             renderCalendarDashboard();
             renderSymptomIntelligenceCard();
+            schedulePeriodWarningNotifications();
+        }
+
+        function markPeriodNotStartedYet() {
+            localStorage.setItem(cycleExtendedStorageKey, 'true');
+            renderCalendarDashboard();
+            schedulePeriodWarningNotifications();
+        }
+
+        function maybeAskForNotificationPermission() {
+            if (!('Notification' in window)) return;
+            if (Notification.permission === 'default') {
+                Notification.requestPermission().then(() => schedulePeriodWarningNotifications());
+            }
+        }
+
+        function shouldShowStartButton(day) {
+            return day >= 25 && day <= maxExtendedCycleDays;
+        }
+
+        function shouldShowWarning(day) {
+            return day >= 21;
+        }
+
+        function sendPeriodWarningNotification(force = false) {
+            if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+            const cycleInfo = getCycleInfoForDate(new Date());
+            if (cycleInfo.day < 25 || cycleInfo.day > maxExtendedCycleDays) return;
+
+            const now = Date.now();
+            const lastSent = Number(localStorage.getItem(cycleLastNotificationStorageKey) || 0);
+            const sixHoursMs = 6 * 60 * 60 * 1000;
+            if (!force && lastSent && now - lastSent < sixHoursMs) return;
+
+            new Notification("Period may start soon", {
+                body: "Period may start soon. Open Flo'nt - ZanCare when you need to log it.",
+                tag: "flont-period-warning",
+                renotify: true
+            });
+            localStorage.setItem(cycleLastNotificationStorageKey, String(now));
+        }
+
+        function schedulePeriodWarningNotifications() {
+            if (periodNotificationTimer) clearTimeout(periodNotificationTimer);
+
+            const realCycleInfo = getCycleInfoForDate(new Date());
+            if (realCycleInfo.day >= 25 && realCycleInfo.day <= maxExtendedCycleDays) {
+                maybeAskForNotificationPermission();
+                sendPeriodWarningNotification();
+                periodNotificationTimer = setTimeout(schedulePeriodWarningNotifications, 6 * 60 * 60 * 1000);
+                return;
+            }
+
+            if (realCycleInfo.day < 25) {
+                const day25Date = addDays(realCycleInfo.startDate, 24);
+                const nextMidnightOnDay25 = new Date(day25Date.getFullYear(), day25Date.getMonth(), day25Date.getDate(), 0, 0, 1);
+                const delay = Math.max(1000, nextMidnightOnDay25 - new Date());
+                periodNotificationTimer = setTimeout(() => {
+                    sendPeriodWarningNotification(true);
+                    schedulePeriodWarningNotifications();
+                }, delay);
+            }
         }
 
         function formatCalendarMonthHeader(firstDate, lastDate) {
@@ -816,55 +924,99 @@
             const daysGrid = document.getElementById('calendarDaysGrid');
             const alertZone = document.getElementById('alertBannerZone');
             const calendarMonthHeader = document.getElementById('calendarMonth');
+            const alertCard = document.getElementById('cycleAlertCard');
+            const alertIcon = document.getElementById('cycleAlertIcon');
+            const alertTitle = document.getElementById('cycleAlertTitle');
+            const alertSubtitle = document.getElementById('cycleAlertSubtitle');
+            const actionButtons = document.getElementById('cycleActionButtons');
             daysGrid.innerHTML = '';
 
-            // Late Luteal Window Configuration (Days 25-28)
-            if (currentDayPointer >= 25 && currentDayPointer <= 28) {
+            if (shouldShowWarning(currentDayPointer)) {
                 alertZone.classList.remove('hidden');
+                alertCard.className = "border rounded-2xl p-4 flex flex-col space-y-3 shadow-xs";
+                actionButtons.innerHTML = '';
+
+                if (currentDayPointer > maxExtendedCycleDays) {
+                    alertCard.classList.add('bg-red-50', 'border-red-300', 'text-red-800', 'animate-pulse');
+                    alertIcon.innerText = '!';
+                    alertTitle.innerText = 'Abnormal Period! Please Check';
+                    alertSubtitle.innerText = `It is day ${currentDayPointer}. Please check in with a trusted adult or doctor if something feels off.`;
+                    actionButtons.innerHTML = `
+                        <button onclick="resetCycleToDayOne()" class="w-full bg-red-700 hover:bg-red-800 text-white font-black text-xs tracking-tight uppercase py-3 rounded-xl shadow-xs transition-transform active:scale-95">
+                            Period started today
+                        </button>`;
+                } else {
+                    alertCard.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-800');
+                    alertIcon.innerText = '!';
+                    alertTitle.innerText = currentDayPointer >= 25 ? 'Period may start soon.' : 'Period warning window started.';
+                    alertSubtitle.innerText = currentDayPointer >= 25
+                        ? 'You will get a device notification every 6 hours while this window is active.'
+                        : 'Heads up from day 21. The start button appears on day 25.';
+
+                    if (shouldShowStartButton(currentDayPointer)) {
+                        actionButtons.innerHTML = `
+                            <button onclick="resetCycleToDayOne()" class="w-full bg-red-600 hover:bg-red-700 text-white font-black text-xs tracking-tight uppercase py-3 rounded-xl shadow-xs transition-transform active:scale-95">
+                                Click when your next period starts
+                            </button>`;
+
+                        if (currentDayPointer >= 29 && !cycleInfo.extended) {
+                            actionButtons.innerHTML += `
+                                <button onclick="markPeriodNotStartedYet()" class="w-full bg-white border border-amber-300 text-amber-800 font-black text-xs tracking-tight uppercase py-3 rounded-xl shadow-xs transition-transform active:scale-95">
+                                    Period has not started yet
+                                </button>`;
+                        }
+                    }
+                }
             } else {
                 alertZone.classList.add('hidden');
             }
 
-            const calendarStartDayIdx = (currentDayPointer > 16) ? 13 : -1;
-            const activeSegmentSlice = [];
+            const visibleDate = cycleInfo.date;
+            const displayedMonth = new Date(visibleDate.getFullYear(), visibleDate.getMonth() + calendarMonthOffset, 1);
+            const todayKey = getLocalDateKey(new Date());
+            const selectedKey = getLocalDateKey(visibleDate);
+            const firstDayOfMonth = new Date(displayedMonth.getFullYear(), displayedMonth.getMonth(), 1);
+            const gridStart = addDays(firstDayOfMonth, -firstDayOfMonth.getDay());
+            calendarMonthHeader.innerText = displayedMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
-            for (let i = 0; i < 21; i++) {
-                const dayIdx = calendarStartDayIdx + i;
-                const realDate = addDays(cycleInfo.startDate, dayIdx - 1);
-                activeSegmentSlice.push({
-                    num: realDate.getDate(),
-                    label: realDate.toLocaleString('en-US', { month: 'short' }),
-                    dayIdx
-                });
-            }
+            for (let i = 0; i < 42; i++) {
+                const cellDate = addDays(gridStart, i);
+                const cellKey = getLocalDateKey(cellDate);
+                const dayIdx = getCycleDayForDate(cellDate, cycleInfo.startDate);
+                const isCurrentMonth = cellDate.getMonth() === displayedMonth.getMonth();
+                const isToday = cellKey === todayKey;
+                const isSelected = cellKey === selectedKey;
 
-            const firstVisibleDate = addDays(cycleInfo.startDate, calendarStartDayIdx - 1);
-            const lastVisibleDate = addDays(firstVisibleDate, 20);
-            calendarMonthHeader.innerText = formatCalendarMonthHeader(firstVisibleDate, lastVisibleDate);
+                let bgStyle = isCurrentMonth ? "text-gray-700 bg-white" : "text-gray-300 bg-gray-50";
+                let phaseLabel = dayIdx > 0 ? `D${dayIdx}` : '';
 
-            activeSegmentSlice.forEach(day => {
-                let bgStyle = "text-gray-700 bg-transparent";
-                const isMatchForSelectedDay = (day.dayIdx === currentDayPointer);
+                if (dayIdx >= 1 && dayIdx <= 7) {
+                    bgStyle = "bg-rose-50 text-[#FF4B72]";
+                } else if (dayIdx >= 13 && dayIdx <= 16) {
+                    bgStyle = "bg-purple-50 text-purple-600";
+                } else if (dayIdx >= 21 && dayIdx <= maxExtendedCycleDays) {
+                    bgStyle = "bg-amber-50 text-amber-700";
+                } else if (dayIdx > maxExtendedCycleDays) {
+                    bgStyle = "bg-red-50 text-red-700";
+                    phaseLabel = 'Late';
+                }
 
-                if (day.dayIdx >= 1 && day.dayIdx <= 7) {
-                    if (isMatchForSelectedDay) bgStyle = "bg-[#FF4B72] text-white ring-4 ring-pink-200 rounded-full";
-                    else bgStyle = "bg-rose-50 text-[#FF4B72] rounded-full";
-                } else if (day.dayIdx >= 13 && day.dayIdx <= 15) {
-                    if (isMatchForSelectedDay) bgStyle = "bg-purple-500 text-white ring-4 ring-purple-100 rounded-full";
-                    else bgStyle = "bg-purple-50 text-purple-600 rounded-full";
-                } else if (day.dayIdx >= 16 && day.dayIdx <= 28) {
-                    if (isMatchForSelectedDay) bgStyle = "bg-amber-500 text-white ring-4 ring-amber-100 rounded-full";
-                    else bgStyle = "bg-amber-50 text-amber-700 rounded-full";
-                } else {
-                    if (isMatchForSelectedDay) bgStyle = "bg-gray-900 text-white ring-4 ring-gray-200 rounded-full";
+                if (!isCurrentMonth) {
+                    bgStyle += " opacity-50";
+                }
+
+                if (isSelected) {
+                    bgStyle = "bg-[#FF4B72] text-white ring-4 ring-pink-200";
+                } else if (isToday) {
+                    bgStyle = "bg-gray-900 text-white ring-4 ring-gray-200";
                 }
 
                 daysGrid.innerHTML += `
-                    <div class="flex flex-col items-center justify-center p-1.5 min-w-[36px] min-h-[42px] ${bgStyle}">
-                        <span class="text-[0.6rem] opacity-60 font-medium block leading-none mb-0.5">${day.label}</span>
-                        <span class="text-xs font-black block leading-none">${day.num}</span>
+                    <div class="relative flex flex-col items-center justify-center rounded-2xl border border-gray-100 min-h-[52px] p-1 ${bgStyle}">
+                        <span class="text-xs font-black leading-none">${cellDate.getDate()}</span>
+                        <span class="text-[0.55rem] font-bold opacity-70 leading-none mt-1">${phaseLabel}</span>
                     </div>`;
-            });
+            }
         }
         const fullDatabase = {
             mensesEarly: {
@@ -1085,8 +1237,10 @@
             }
         }
 
+        migrateCycleStorageForCurrentPeriod();
         syncCycleDayFromDeviceDate();
         scheduleRealDateSync();
+        schedulePeriodWarningNotifications();
         updateNavigationUI();
         syncButtonState();
     </script>
